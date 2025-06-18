@@ -38,8 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'users'
+    'users',
 ]
+
+SITE_ID = 1
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
