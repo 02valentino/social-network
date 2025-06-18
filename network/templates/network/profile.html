@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>{{ profile_user.username }}</h2>
+
+  {% if profile_user.bio %}
+    <p><strong>Bio:</strong> {{ profile_user.bio }}</p>
+  {% endif %}
+
+  {% if user.is_authenticated and user == profile_user %}
+    <p><strong>Email:</strong> {{ profile_user.email }}</p>
+    <p><strong>Joined:</strong> {{ profile_user.date_joined }}</p>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+    <h3>Posts by {{ profile_user.username }}</h3>
+    {% if posts %}
+      <ul>
+        {% for post in posts %}
+          <li>{{ post.content }} <em>— {{ post.posted_at|date:"M d, Y H:i" }}</em></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No posts yet.</p>
+    {% endif %}
+  {% else %}
+    <p><em>You must be logged in to view this user's posts.</em></p>
+  {% endif %}
+{% endblock %}
