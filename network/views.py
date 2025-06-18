@@ -21,3 +21,8 @@ class ProfileView(DetailView):
 
     def get_object(self, queryset=None):
         return get_object_or_404(User, username=self.kwargs['username'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['posts'] = self.object.posts.all().order_by('-posted_at')
+        return context
