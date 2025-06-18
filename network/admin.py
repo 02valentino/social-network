@@ -5,6 +5,7 @@ from .models import Post, Follow
 class PostAdmin(admin.ModelAdmin):
     list_display = ('author', 'content', 'timestamp')
     search_fields = ('author__username', 'content')
+    ordering = ('-created_at',)
 
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
