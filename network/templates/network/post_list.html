@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Latest Posts</h2>
+  {% for post in posts %}
+    <div>
+      <strong>{{ post.author.username }}</strong> - {{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}<br>
+      <p>{{ post.content }}</p>
+      <hr>
+    </div>
+  {% empty %}
+    <p>No posts yet.</p>
+  {% endfor %}
+{% endblock %}
