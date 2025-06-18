@@ -5,4 +5,4 @@ class PostListView(ListView):
     model = Post
     template_name = 'network/post_list.html'
     context_object_name = 'posts'
-    ordering = ['-created_at']
+    ordering = ['-posted_at']
