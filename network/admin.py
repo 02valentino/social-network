@@ -3,9 +3,9 @@ from .models import Post, Follow
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('author', 'content', 'timestamp')
+    list_display = ('author', 'content', 'posted_at')
     search_fields = ('author__username', 'content')
-    ordering = ('-created_at',)
+    ordering = ('-posted_at',)
 
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
