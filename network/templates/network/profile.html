@@ -10,6 +10,7 @@
   {% if user.is_authenticated and user == profile_user %}
     <p><strong>Email:</strong> {{ profile_user.email }}</p>
     <p><strong>Joined:</strong> {{ profile_user.date_joined }}</p>
+    <p><a href="{% url 'edit-profile' %}">Edit Profile</a></p>
   {% endif %}
 
   {% if user.is_authenticated %}
