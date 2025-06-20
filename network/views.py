@@ -112,3 +112,12 @@ class UnfollowUserView(LoginRequiredMixin, View):
         if user_to_unfollow != request.user:
             Follow.objects.filter(follower=request.user, following=user_to_unfollow).delete()
         return redirect('profile', username=username)
+
+class FollowingFeedView(LoginRequiredMixin, ListView):
+    model = Post
+    template_name = 'network/following_feed.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        following_users = self.request.user.following.values_list('following', flat=True)
+        return Post.objects.filter(author__id__in=following_users).order_by('-posted_at')
