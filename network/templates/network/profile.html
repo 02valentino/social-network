@@ -13,6 +13,17 @@
     <p><a href="{% url 'edit-profile' %}">Edit Profile</a></p>
   {% endif %}
 
+  {% if user.is_authenticated and user != profile_user %}
+    <form method="post" action="{% url 'follow-user' profile_user.username %}" style="display: inline;">
+      {% csrf_token %}
+      {% if user_follows %}
+        <button formaction="{% url 'unfollow-user' profile_user.username %}" type="submit">Unfollow</button>
+      {% else %}
+        <button type="submit">Follow</button>
+      {% endif %}
+    </form>
+  {% endif %}
+
   {% if user.is_authenticated %}
     <h3>Posts by {{ profile_user.username }}</h3>
     {% if posts %}
