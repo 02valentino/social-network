@@ -101,3 +101,10 @@ class FollowUserView(LoginRequiredMixin, View):
         if user_to_follow != request.user:
             Follow.objects.get_or_create(follower=request.user, following=user_to_follow)
         return redirect('profile', username=username)
+
+class UnfollowUserView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        user_to_unfollow = get_object_or_404(User, username=username)
+        if user_to_unfollow != request.user:
+            Follow.objects.filter(follower=request.user, following=user_to_unfollow).delete()
+        return redirect('profile', username=username)
