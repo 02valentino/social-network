@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Following Feed</h2>
+  {% if posts %}
+    {% for post in posts %}
+      <div>
+        <strong><a href="{% url 'profile' post.author.username %}">{{ post.author.username }}</a></strong>
+        <p>{{ post.content }}</p>
+        <small>{{ post.posted_at|date:"M d, Y H:i" }}</small>
+        <hr>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>You aren't following anyone who has posted yet.</p>
+  {% endif %}
+{% endblock %}
