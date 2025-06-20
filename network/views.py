@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from .forms import PostForm
 from django.contrib import messages
 from users.models import CustomUser
+from django.views import View
 
 User = get_user_model()
 
@@ -17,6 +18,14 @@ class PostListView(ListView):
     template_name = 'network/post_list.html'
     context_object_name = 'posts'
     ordering = ['-posted_at']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['is_moderator'] = False
+        if user.is_authenticated and user.groups.filter(name='Moderator').exists():
+            context['is_moderator'] = True
+        return context
 
 class ProfileView(DetailView):
     model = User
