@@ -1,5 +1,5 @@
 from django.views.generic import ListView
-from .models import Post
+from .models import Post, Follow
 from django.contrib.auth import get_user_model
 from django.views.generic import TemplateView, DetailView
 from django.shortcuts import redirect, get_object_or_404
@@ -40,6 +40,14 @@ class ProfileView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['posts'] = self.object.posts.all().order_by('-posted_at')
+
+        user = self.request.user
+        profile_user = self.object
+
+        context['user_follows'] = (
+                user.is_authenticated and user != profile_user and
+                Follow.objects.filter(follower=user, following=profile_user).exists()
+        )
         return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
