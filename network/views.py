@@ -1,14 +1,14 @@
 from django.views.generic import ListView
 from .models import Post
 from django.contrib.auth import get_user_model
-from django.views.generic import DetailView
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView, DetailView
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from .forms import PostForm
 from django.contrib import messages
-from django.shortcuts import redirect
+from users.models import CustomUser
 
 User = get_user_model()
 
@@ -45,3 +45,15 @@ class PostCreateView(LoginRequiredMixin, CreateView):
             return redirect('post-list')
         form.instance.author = self.request.user
         return super().form_valid(form)
+
+class ModeratorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'network/mod_dashboard.html'
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='Moderator').exists()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['users'] = CustomUser.objects.all()
+        context['posts'] = Post.objects.all().order_by('-posted_at')
+        return context
