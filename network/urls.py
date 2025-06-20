@@ -4,6 +4,7 @@ from .views import ProfileView
 from .views import PostCreateView
 from .views import ModeratorDashboardView
 from .views import ToggleBanUserView, DeleteAnyPostView
+from .views import FollowUserView, UnfollowUserView
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post-list'),
@@ -12,4 +13,6 @@ urlpatterns = [
     path('moderator/', ModeratorDashboardView.as_view(), name='moderator-dashboard'),
     path('moderator/toggle-ban/<int:user_id>/', ToggleBanUserView.as_view(), name='toggle-ban'),
     path('moderator/delete-post/<int:post_id>/', DeleteAnyPostView.as_view(), name='delete-post'),
+    path('follow/<str:username>/', FollowUserView.as_view(), name='follow-user'),
+    path('unfollow/<str:username>/', UnfollowUserView.as_view(), name='unfollow-user'),
 ]
