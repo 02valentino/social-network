@@ -94,3 +94,10 @@ class DeleteAnyPostView(LoginRequiredMixin, UserPassesTestMixin, View):
         post.delete()
         messages.success(request, "Post deleted.")
         return redirect('moderator-dashboard')
+
+class FollowUserView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        user_to_follow = get_object_or_404(User, username=username)
+        if user_to_follow != request.user:
+            Follow.objects.get_or_create(follower=request.user, following=user_to_follow)
+        return redirect('profile', username=username)
