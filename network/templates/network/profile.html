@@ -3,6 +3,9 @@
 {% block content %}
   <h2>{{ profile_user.username }}</h2>
 
+    <p><strong>Followers:</strong> {{ followers_count }}</p>
+    <p><strong>Following:</strong> {{ following_count }}</p>
+
   {% if profile_user.bio %}
     <p><strong>Bio:</strong> {{ profile_user.bio }}</p>
   {% endif %}
