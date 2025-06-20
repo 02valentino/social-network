@@ -39,15 +39,19 @@ class ProfileView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['posts'] = self.object.posts.all().order_by('-posted_at')
-
-        user = self.request.user
         profile_user = self.object
+        user = self.request.user
+
+        context['posts'] = profile_user.posts.all().order_by('-posted_at')
 
         context['user_follows'] = (
                 user.is_authenticated and user != profile_user and
                 Follow.objects.filter(follower=user, following=profile_user).exists()
         )
+
+        context['followers_count'] = profile_user.followers.count()
+        context['following_count'] = profile_user.following.count()
+
         return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
