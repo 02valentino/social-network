@@ -67,3 +67,13 @@ class ToggleBanUserView(LoginRequiredMixin, UserPassesTestMixin, View):
         user.is_banned = not user.is_banned
         user.save()
         return redirect('moderator-dashboard')
+
+class DeleteAnyPostView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.groups.filter(name='Moderator').exists()
+
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        post.delete()
+        messages.success(request, "Post deleted.")
+        return redirect('moderator-dashboard')
