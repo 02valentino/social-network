@@ -13,6 +13,8 @@
 
                 <a href="{% url 'post-create' %}">New Post</a>
 
+                <a href="{% url 'following-feed' %}">Following Feed</a>
+
                 {% if is_moderator %}
                     <a href="{% url 'moderator-dashboard' %}">Moderator Panel</a>
                 {% endif %}
