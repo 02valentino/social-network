@@ -4,7 +4,11 @@
   <h2>Latest Posts</h2>
   {% for post in posts %}
     <div>
-      <strong>{{ post.author.username }}</strong> - {{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}<br>
+      <strong>
+        <a href="{% url 'profile' post.author.username %}">
+          {{ post.author.username }}
+        </a>
+      </strong> - {{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}<br>
       <p>{{ post.content }}</p>
       <hr>
     </div>
