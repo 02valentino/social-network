@@ -7,6 +7,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from .forms import PostForm
+from django.contrib import messages
+from django.shortcuts import redirect
 
 User = get_user_model()
 
@@ -38,5 +40,8 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('post-list')
 
     def form_valid(self, form):
+        if self.request.user.is_banned:
+            messages.error(self.request, "You are banned from posting.")
+            return redirect('post-list')
         form.instance.author = self.request.user
         return super().form_valid(form)
