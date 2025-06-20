@@ -57,3 +57,13 @@ class ModeratorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         context['users'] = CustomUser.objects.all()
         context['posts'] = Post.objects.all().order_by('-posted_at')
         return context
+
+class ToggleBanUserView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.groups.filter(name='Moderator').exists()
+
+    def post(self, request, user_id):
+        user = get_object_or_404(CustomUser, id=user_id)
+        user.is_banned = not user.is_banned
+        user.save()
+        return redirect('moderator-dashboard')
