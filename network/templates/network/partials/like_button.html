@@ -1,0 +1,11 @@
+<form action="{% url 'toggle-like' post.pk %}" method="post" style="display:inline;">
+  {% csrf_token %}
+  <button type="submit">
+    {% if user in post.liked_by.all %}
+      ❤️ Unlike
+    {% else %}
+      🤍 Like
+    {% endif %}
+    ({{ post.total_likes }})
+  </button>
+</form>
