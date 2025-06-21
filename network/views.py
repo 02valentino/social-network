@@ -10,6 +10,7 @@ from .forms import PostForm
 from django.contrib import messages
 from users.models import CustomUser
 from django.views import View
+from django.http import HttpResponseRedirect
 
 User = get_user_model()
 
@@ -121,3 +122,14 @@ class FollowingFeedView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         following_users = self.request.user.following.values_list('following', flat=True)
         return Post.objects.filter(author__id__in=following_users).order_by('-posted_at')
+
+class ToggleLikeView(View):
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        user = request.user
+        if user.is_authenticated:
+            if user in post.liked_by.all():
+                post.liked_by.remove(user)
+            else:
+                post.liked_by.add(user)
+        return redirect(request.META.get('HTTP_REFERER', 'post-list'))
