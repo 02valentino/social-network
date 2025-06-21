@@ -33,6 +33,7 @@
       <ul>
         {% for post in posts %}
           <li>{{ post.content }} <em>— {{ post.posted_at|date:"M d, Y H:i" }}</em></li>
+          {% include "network/partials/like_button.html" with post=post %}
         {% endfor %}
       </ul>
     {% else %}

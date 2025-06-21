@@ -12,6 +12,7 @@
       <p>{{ post.content }}</p>
       <hr>
     </div>
+    {% include "network/partials/like_button.html" with post=post %}
   {% empty %}
     <p>No posts yet.</p>
   {% endfor %}

@@ -10,6 +10,7 @@
         <small>{{ post.posted_at|date:"M d, Y H:i" }}</small>
         <hr>
       </div>
+      {% include "network/partials/like_button.html" with post=post %}
     {% endfor %}
   {% else %}
     <p>You aren't following anyone who has posted yet.</p>
