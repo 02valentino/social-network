@@ -1,12 +1,11 @@
-from django.views.generic import ListView
-from .models import Post, Follow
+from django.views.generic import ListView, TemplateView, DetailView, FormView
+from .models import Post, Follow, Comment
 from django.contrib.auth import get_user_model
-from django.views.generic import TemplateView, DetailView
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views.generic.edit import CreateView
-from django.urls import reverse_lazy
-from .forms import PostForm
+from django.urls import reverse, reverse_lazy
+from .forms import PostForm, CommentForm
 from django.contrib import messages
 from users.models import CustomUser
 from django.views import View
@@ -67,6 +66,28 @@ class PostCreateView(LoginRequiredMixin, CreateView):
             return redirect('post-list')
         form.instance.author = self.request.user
         return super().form_valid(form)
+
+class PostDetailView(DetailView, FormView):
+    model = Post
+    template_name = 'network/post_detail.html'
+    context_object_name = 'post'
+    form_class = CommentForm
+
+    def get_success_url(self):
+        return reverse('post-detail', kwargs={'pk': self.get_object().pk})
+
+    def form_valid(self, form):
+        comment = form.save(commit=False)
+        comment.author = self.request.user
+        comment.post = self.get_object()
+        comment.save()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comment_form'] = self.get_form()
+        context['comments'] = self.object.comments.select_related('author').all().order_by('-created_at')
+        return context
 
 class ModeratorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'network/mod_dashboard.html'
