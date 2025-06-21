@@ -7,6 +7,7 @@ from .views import ToggleBanUserView, DeleteAnyPostView
 from .views import FollowUserView, UnfollowUserView
 from .views import FollowingFeedView
 from .views import ToggleLikeView
+from .views import PostDetailView
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post-list'),
@@ -19,4 +20,5 @@ urlpatterns = [
     path('unfollow/<str:username>/', UnfollowUserView.as_view(), name='unfollow-user'),
     path('following/', FollowingFeedView.as_view(), name='following-feed'),
     path('post/<int:pk>/like/', ToggleLikeView.as_view(), name='toggle-like'),
+    path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
 ]
