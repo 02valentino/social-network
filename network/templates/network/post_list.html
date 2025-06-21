@@ -13,6 +13,9 @@
       <hr>
     </div>
     {% include "network/partials/like_button.html" with post=post %}
+    <a href="{% url 'post-detail' post.pk %}">
+      <button type="button">Comment</button>
+    </a>
   {% empty %}
     <p>No posts yet.</p>
   {% endfor %}
