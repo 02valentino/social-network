@@ -1,5 +1,5 @@
 from django.views.generic import ListView, TemplateView, DetailView, FormView, UpdateView, DeleteView
-from .models import Post, Follow, Comment
+from .models import Post, Follow, Comment, Notification
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -209,3 +209,11 @@ class UserSearchView(ListView):
         context = super().get_context_data(**kwargs)
         context['query'] = self.request.GET.get('q', '')
         return context
+
+class NotificationListView(ListView):
+    model = Notification
+    template_name = 'network/notifications.html'
+    context_object_name = 'notifications'
+
+    def get_queryset(self):
+        return Notification.objects.filter(recipient=self.request.user).order_by('-timestamp')
