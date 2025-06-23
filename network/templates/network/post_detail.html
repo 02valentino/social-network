@@ -11,6 +11,14 @@
     <div>
       <strong>{{ comment.author.username }}</strong>: {{ comment.content }}
       <small>{{ comment.created_at|date:"M d, Y H:i" }}</small>
+      {% if user.is_authenticated %}
+        {% if user == comment.author or is_moderator %}
+          <form method="post" action="{% url 'delete-comment' comment.pk %}">
+            {% csrf_token %}
+            <button type="submit">Delete</button>
+          </form>
+        {% endif %}
+      {% endif %}
     </div>
   {% empty %}
     <p>No comments yet.</p>
