@@ -30,3 +30,13 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.author} on {self.post} at {self.created_at}"
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='notifications', on_delete=models.CASCADE)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_notifications', on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"To {self.recipient} from {self.sender}: {self.message}"
