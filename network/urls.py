@@ -10,6 +10,7 @@ from .views import ToggleLikeView
 from .views import PostDetailView
 from .views import PostEditView, PostDeleteView
 from .views import CommentDeleteView
+from .views import UserSearchView
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post-list'),
@@ -26,4 +27,5 @@ urlpatterns = [
     path('post/<int:pk>/edit/', PostEditView.as_view(), name='edit-post'),
     path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='delete-post'),
     path('comment/<int:pk>/delete/', CommentDeleteView.as_view(), name='delete-comment'),
+    path('search/', UserSearchView.as_view(), name='user-search'),
 ]
