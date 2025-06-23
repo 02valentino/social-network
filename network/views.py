@@ -178,3 +178,15 @@ class ToggleLikeView(View):
             else:
                 post.liked_by.add(user)
         return redirect(request.META.get('HTTP_REFERER', 'post-list'))
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+    template_name = 'network/comment_confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+
+    def test_func(self):
+        comment = self.get_object()
+        user = self.request.user
+        return user == comment.author or user.groups.filter(name='Moderator').exists()
