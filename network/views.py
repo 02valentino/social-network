@@ -1,4 +1,4 @@
-from django.views.generic import ListView, TemplateView, DetailView, FormView
+from django.views.generic import ListView, TemplateView, DetailView, FormView, UpdateView
 from .models import Post, Follow, Comment
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
@@ -66,6 +66,18 @@ class PostCreateView(LoginRequiredMixin, CreateView):
             return redirect('post-list')
         form.instance.author = self.request.user
         return super().form_valid(form)
+
+class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Post
+    fields = ['content']
+    template_name = 'network/edit_post.html'
+
+    def get_success_url(self):
+        return reverse_lazy('post-list')
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
 
 class PostDetailView(DetailView, FormView):
     model = Post
