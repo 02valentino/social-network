@@ -10,6 +10,7 @@ from django.contrib import messages
 from users.models import CustomUser
 from django.views import View
 from django.http import HttpResponseRedirect
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -190,3 +191,21 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         comment = self.get_object()
         user = self.request.user
         return user == comment.author or user.groups.filter(name='Moderator').exists()
+
+class UserSearchView(ListView):
+    model = CustomUser
+    template_name = 'network/user_search.html'
+    context_object_name = 'results'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        if query:
+            return CustomUser.objects.filter(
+                Q(username__icontains=query) | Q(email__icontains=query)
+            ).exclude(is_superuser=True)
+        return CustomUser.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('q', '')
+        return context
