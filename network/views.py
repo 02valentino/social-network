@@ -1,4 +1,4 @@
-from django.views.generic import ListView, TemplateView, DetailView, FormView, UpdateView
+from django.views.generic import ListView, TemplateView, DetailView, FormView, UpdateView, DeleteView
 from .models import Post, Follow, Comment
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
@@ -78,6 +78,18 @@ class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.author
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Post
+    template_name = 'network/delete_post.html'
+    success_url = reverse_lazy('post-list')
+
+    def test_func(self):
+        post = self.get_object()
+        return (
+            self.request.user == post.author or
+            self.request.user.groups.filter(name='Moderator').exists()
+        )
 
 class PostDetailView(DetailView, FormView):
     model = Post
