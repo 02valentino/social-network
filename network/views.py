@@ -1,5 +1,5 @@
 from django.views.generic import ListView, TemplateView, DetailView, FormView, UpdateView, DeleteView
-from .models import Post, Follow, Comment, Notification
+from .models import Post, Follow, Comment, Notification, FriendRequest
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -145,6 +145,13 @@ class DeleteAnyPostView(LoginRequiredMixin, UserPassesTestMixin, View):
         post.delete()
         messages.success(request, "Post deleted.")
         return redirect('moderator-dashboard')
+
+class SendFriendRequestView(View):
+    def post(self, request, username):
+        receiver = get_object_or_404(User, username=username)
+        if request.user != receiver:
+            FriendRequest.objects.get_or_create(sender=request.user, receiver=receiver)
+        return redirect('profile', username=username)
 
 class FollowUserView(LoginRequiredMixin, View):
     def post(self, request, username):
