@@ -10,4 +10,4 @@ class CustomUserCreationForm(UserCreationForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['bio', 'profile_picture']
+        fields = ['bio', 'profile_picture', 'is_private']
