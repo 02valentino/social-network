@@ -22,6 +22,15 @@ class Follow(models.Model):
     def __str__(self):
         return f"{self.follower.username} follows {self.following.username}"
 
+class FriendRequest(models.Model):
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_requests', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_requests', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('sender', 'receiver')
+
 class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
