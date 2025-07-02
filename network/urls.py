@@ -12,6 +12,7 @@ from .views import PostEditView, PostDeleteView
 from .views import CommentDeleteView
 from .views import UserSearchView
 from .views import NotificationListView
+from .views import SendFriendRequestView, AcceptFriendRequestView, DeclineFriendRequestView
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post-list'),
@@ -30,4 +31,7 @@ urlpatterns = [
     path('comment/<int:pk>/delete/', CommentDeleteView.as_view(), name='delete-comment'),
     path('search/', UserSearchView.as_view(), name='user-search'),
     path('notifications/', NotificationListView.as_view(), name='notifications'),
+    path('friend-request/send/<str:username>/', SendFriendRequestView.as_view(), name='send-friend-request'),
+    path('friend-request/accept/<int:pk>/', AcceptFriendRequestView.as_view(), name='accept-friend-request'),
+    path('friend-request/decline/<int:pk>/', DeclineFriendRequestView.as_view(), name='decline-friend-request'),
 ]
