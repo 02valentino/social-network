@@ -153,6 +153,13 @@ class SendFriendRequestView(View):
             FriendRequest.objects.get_or_create(sender=request.user, receiver=receiver)
         return redirect('profile', username=username)
 
+class AcceptFriendRequestView(View):
+    def post(self, request, pk):
+        friend_request = get_object_or_404(FriendRequest, pk=pk, receiver=request.user)
+        friend_request.accepted = True
+        friend_request.save()
+        return redirect('notifications')
+
 class FollowUserView(LoginRequiredMixin, View):
     def post(self, request, username):
         user_to_follow = get_object_or_404(User, username=username)
