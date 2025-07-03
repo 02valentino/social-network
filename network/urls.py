@@ -4,8 +4,6 @@ from .views import ProfileView
 from .views import PostCreateView
 from .views import ModeratorDashboardView
 from .views import ToggleBanUserView, DeleteAnyPostView
-from .views import FollowUserView, UnfollowUserView
-from .views import FollowingFeedView
 from .views import ToggleLikeView
 from .views import PostDetailView
 from .views import PostEditView, PostDeleteView
@@ -13,6 +11,7 @@ from .views import CommentDeleteView
 from .views import UserSearchView
 from .views import NotificationListView
 from .views import SendFriendRequestView, AcceptFriendRequestView, DeclineFriendRequestView
+from .views import FriendListView, UnfriendView
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post-list'),
