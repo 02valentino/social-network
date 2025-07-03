@@ -36,6 +36,16 @@ class FriendListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return self.request.user.friends
 
+class UnfriendView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        other_user = get_object_or_404(User, username=username)
+        FriendRequest.objects.filter(
+            (Q(sender=request.user, receiver=other_user) |
+             Q(sender=other_user, receiver=request.user)) &
+            Q(accepted=True)
+        ).delete()
+        return redirect('profile', username=username)
+
 class ProfileView(DetailView):
     model = User
     template_name = 'network/profile.html'
