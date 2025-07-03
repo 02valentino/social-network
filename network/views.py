@@ -20,6 +20,14 @@ class PostListView(ListView):
     context_object_name = 'posts'
     ordering = ['-posted_at']
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            friends = user.friends
+            return Post.objects.filter(author__in=friends).order_by('-posted_at')
+        else:
+            return Post.objects.none()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
