@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q
+from network.models import FriendRequest
 
 class CustomUser(AbstractUser):
     bio = models.TextField(blank=True)
@@ -9,3 +11,10 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+
+    @property
+    def friends(self):
+        accepted_requests = FriendRequest.objects.filter(
+            (Q(sender=self) | Q(receiver=self)) & Q(accepted=True)
+        )
+        return [fr.receiver if fr.sender == self else fr.sender for fr in accepted_requests]
