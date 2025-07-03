@@ -3,9 +3,6 @@
 {% block content %}
   <h2>{{ profile_user.username }}</h2>
 
-    <p><strong>Followers:</strong> {{ followers_count }}</p>
-    <p><strong>Following:</strong> {{ following_count }}</p>
-
   {% if profile_user.bio %}
     <p><strong>Bio:</strong> {{ profile_user.bio }}</p>
   {% endif %}
@@ -16,16 +13,21 @@
     <p><a href="{% url 'edit-profile' %}">Edit Profile</a></p>
   {% endif %}
 
-  {% if user.is_authenticated and user != profile_user %}
-    <form method="post" action="{% url 'follow-user' profile_user.username %}" style="display: inline;">
-      {% csrf_token %}
-      {% if user_follows %}
-        <button formaction="{% url 'unfollow-user' profile_user.username %}" type="submit">Unfollow</button>
-      {% else %}
-        <button type="submit">Follow</button>
-      {% endif %}
-    </form>
-  {% endif %}
+{% if user.is_authenticated and user != profile_user %}
+  <form method="post" action="{% url 'send-friend-request' profile_user.username %}">
+    {% csrf_token %}
+    {% if is_friend %}
+      <p>You and {{ profile_user.username }} are friends.</p>
+    {% elif request_sent %}
+      <button formaction="{% url 'cancel-friend-request' profile_user.username %}" type="submit">Cancel Request</button>
+    {% elif request_received %}
+      <button formaction="{% url 'accept-friend-request' profile_user.username %}" type="submit">Accept</button>
+      <button formaction="{% url 'decline-friend-request' profile_user.username %}" type="submit">Decline</button>
+    {% else %}
+      <button type="submit">Send Friend Request</button>
+    {% endif %}
+  </form>
+{% endif %}
 
   {% if user.is_authenticated %}
     <h3>Posts by {{ profile_user.username }}</h3>

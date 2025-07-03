@@ -36,24 +36,6 @@ class PostListView(ListView):
             context['is_moderator'] = True
         return context
 
-class FriendListView(LoginRequiredMixin, ListView):
-    model = CustomUser
-    template_name = 'network/friends_list.html'
-    context_object_name = 'friends'
-
-    def get_queryset(self):
-        return self.request.user.friends
-
-class UnfriendView(LoginRequiredMixin, View):
-    def post(self, request, username):
-        other_user = get_object_or_404(User, username=username)
-        FriendRequest.objects.filter(
-            (Q(sender=request.user, receiver=other_user) |
-             Q(sender=other_user, receiver=request.user)) &
-            Q(accepted=True)
-        ).delete()
-        return redirect('profile', username=username)
-
 class ProfileView(DetailView):
     model = User
     template_name = 'network/profile.html'
@@ -176,26 +158,6 @@ class DeleteAnyPostView(LoginRequiredMixin, UserPassesTestMixin, View):
         post.delete()
         messages.success(request, "Post deleted.")
         return redirect('moderator-dashboard')
-
-class SendFriendRequestView(View):
-    def post(self, request, username):
-        receiver = get_object_or_404(User, username=username)
-        if request.user != receiver:
-            FriendRequest.objects.get_or_create(sender=request.user, receiver=receiver)
-        return redirect('profile', username=username)
-
-class AcceptFriendRequestView(View):
-    def post(self, request, pk):
-        friend_request = get_object_or_404(FriendRequest, pk=pk, receiver=request.user)
-        friend_request.accepted = True
-        friend_request.save()
-        return redirect('notifications')
-
-class DeclineFriendRequestView(View):
-    def post(self, request, pk):
-        friend_request = get_object_or_404(FriendRequest, pk=pk, receiver=request.user)
-        friend_request.delete()
-        return redirect('notifications')
 
 class ToggleLikeView(View):
     def post(self, request, pk):
