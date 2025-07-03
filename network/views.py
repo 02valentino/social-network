@@ -63,6 +63,19 @@ class ProfileView(DetailView):
 
         context['posts'] = profile_user.posts.all().order_by('-posted_at')
 
+        context['is_friend'] = FriendRequest.objects.filter(
+            (Q(sender=user, receiver=profile_user) | Q(sender=profile_user, receiver=user)) &
+            Q(accepted=True)
+        ).exists()
+
+        context['request_sent'] = FriendRequest.objects.filter(
+            sender=user, receiver=profile_user, accepted=False
+        ).exists()
+
+        context['request_received'] = FriendRequest.objects.filter(
+            sender=profile_user, receiver=user, accepted=False
+        ).exists()
+
         return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
