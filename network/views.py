@@ -1,5 +1,5 @@
 from django.views.generic import ListView, TemplateView, DetailView, FormView, UpdateView, DeleteView
-from .models import Post, Follow, Comment, Notification, FriendRequest
+from .models import Post, Comment, Notification, FriendRequest
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -44,14 +44,6 @@ class ProfileView(DetailView):
         user = self.request.user
 
         context['posts'] = profile_user.posts.all().order_by('-posted_at')
-
-        context['user_follows'] = (
-                user.is_authenticated and user != profile_user and
-                Follow.objects.filter(follower=user, following=profile_user).exists()
-        )
-
-        context['followers_count'] = profile_user.followers.count()
-        context['following_count'] = profile_user.following.count()
 
         return context
 
@@ -165,29 +157,6 @@ class DeclineFriendRequestView(View):
         friend_request = get_object_or_404(FriendRequest, pk=pk, receiver=request.user)
         friend_request.delete()
         return redirect('notifications')
-
-class FollowUserView(LoginRequiredMixin, View):
-    def post(self, request, username):
-        user_to_follow = get_object_or_404(User, username=username)
-        if user_to_follow != request.user:
-            Follow.objects.get_or_create(follower=request.user, following=user_to_follow)
-        return redirect('profile', username=username)
-
-class UnfollowUserView(LoginRequiredMixin, View):
-    def post(self, request, username):
-        user_to_unfollow = get_object_or_404(User, username=username)
-        if user_to_unfollow != request.user:
-            Follow.objects.filter(follower=request.user, following=user_to_unfollow).delete()
-        return redirect('profile', username=username)
-
-class FollowingFeedView(LoginRequiredMixin, ListView):
-    model = Post
-    template_name = 'network/following_feed.html'
-    context_object_name = 'posts'
-
-    def get_queryset(self):
-        following_users = self.request.user.following.values_list('following', flat=True)
-        return Post.objects.filter(author__id__in=following_users).order_by('-posted_at')
 
 class ToggleLikeView(View):
     def post(self, request, pk):
