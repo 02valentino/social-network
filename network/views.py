@@ -28,6 +28,14 @@ class PostListView(ListView):
             context['is_moderator'] = True
         return context
 
+class FriendListView(LoginRequiredMixin, ListView):
+    model = CustomUser
+    template_name = 'network/friends_list.html'
+    context_object_name = 'friends'
+
+    def get_queryset(self):
+        return self.request.user.friends
+
 class ProfileView(DetailView):
     model = User
     template_name = 'network/profile.html'
