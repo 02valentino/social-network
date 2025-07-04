@@ -261,8 +261,19 @@ class ToggleLikeView(View):
         if user.is_authenticated:
             if user in post.liked_by.all():
                 post.liked_by.remove(user)
+                Notification.objects.filter(
+                    sender=user,
+                    recipient=post.author,
+                    message__icontains="liked your post"
+                ).delete()
             else:
                 post.liked_by.add(user)
+                if user != post.author:
+                    Notification.objects.create(
+                        sender=user,
+                        recipient=post.author,
+                        message=f"{user.username} liked your post."
+                    )
         return redirect(request.META.get('HTTP_REFERER', 'post-list'))
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
