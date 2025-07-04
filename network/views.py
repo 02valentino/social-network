@@ -217,6 +217,7 @@ class PostDetailView(DetailView, FormView):
         context = super().get_context_data(**kwargs)
         context['comment_form'] = self.get_form()
         context['comments'] = self.object.comments.select_related('author').all().order_by('-created_at')
+        context['previous_url'] = self.request.META.get('HTTP_REFERER')
         return context
 
 class ModeratorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -318,4 +319,14 @@ class NotificationListView(ListView):
             accepted=False
         ).values_list('sender__username', flat=True)
         context['active_friend_requests'] = active_friend_requests
+        return context
+
+class PostLikesListView(LoginRequiredMixin, DetailView):
+    model = Post
+    template_name = 'network/post_likes.html'
+    context_object_name = 'post'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['liked_users'] = self.object.liked_by.all()
         return context
