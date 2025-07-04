@@ -3,6 +3,13 @@
 {% block content %}
   <h2>{{ profile_user.username }}</h2>
 
+  <p><strong>Posts:</strong> {{ posts_count }}</p>
+  <p><strong>
+    <a href="{% url 'user-friends' username=profile_user.username %}">
+      Friends: {{ friends_count|default:0 }}
+    </a>
+  </strong></p>
+
   {% if profile_user.bio %}
     <p><strong>Bio:</strong> {{ profile_user.bio }}</p>
   {% endif %}
@@ -14,19 +21,31 @@
   {% endif %}
 
 {% if user.is_authenticated and user != profile_user %}
-  <form method="post" action="{% url 'send-friend-request' profile_user.username %}">
-    {% csrf_token %}
-    {% if is_friend %}
-      <p>You and {{ profile_user.username }} are friends.</p>
-    {% elif request_sent %}
-      <button formaction="{% url 'cancel-friend-request' profile_user.username %}" type="submit">Cancel Request</button>
-    {% elif request_received %}
-      <button formaction="{% url 'accept-friend-request' profile_user.username %}" type="submit">Accept</button>
-      <button formaction="{% url 'decline-friend-request' profile_user.username %}" type="submit">Decline</button>
-    {% else %}
-      <button type="submit">Send Friend Request</button>
-    {% endif %}
-  </form>
+  {% if is_friend %}
+    <form action="{% url 'unfriend-user' profile_user.username %}" method="post">
+      {% csrf_token %}
+      <button type="submit">Unfriend</button>
+    </form>
+  {% elif request_received %}
+    <form action="{% url 'accept-friend-request' profile_user.username %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit">Accept</button>
+    </form>
+    <form action="{% url 'decline-friend-request' profile_user.username %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit">Decline</button>
+    </form>
+  {% elif request_sent %}
+    <form action="{% url 'cancel-friend-request' profile_user.username %}" method="post">
+      {% csrf_token %}
+      <button type="submit">Cancel Request</button>
+    </form>
+  {% else %}
+    <form action="{% url 'send-friend-request' profile_user.username %}" method="post">
+      {% csrf_token %}
+      <button type="submit">Add Friend</button>
+    </form>
+  {% endif %}
 {% endif %}
 
   {% if user.is_authenticated %}
