@@ -14,6 +14,7 @@ from .views import FriendsListView, UnfriendUserView
 from .views import SendFriendRequestView, CancelFriendRequestView, AcceptFriendRequestView, DeclineFriendRequestView
 from .views import PostLikesListView
 from .views import ExploreView
+from .views import FriendSuggestionView
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post-list'),
@@ -37,4 +38,5 @@ urlpatterns = [
     path('friend-request/decline/<str:username>/', DeclineFriendRequestView.as_view(), name='decline-friend-request'),
     path('post/<int:pk>/likes/', PostLikesListView.as_view(), name='post-likes'),
     path('explore/', ExploreView.as_view(), name='explore'),
+    path('connect/', FriendSuggestionView.as_view(), name='friend-suggestions'),
 ]

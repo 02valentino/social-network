@@ -10,6 +10,7 @@ from django.contrib import messages
 from users.models import CustomUser
 from django.views import View
 from django.db.models import Q
+import random
 
 User = get_user_model()
 
@@ -336,3 +337,22 @@ class ExploreView(LoginRequiredMixin, ListView):
     template_name = 'network/explore.html'
     context_object_name = 'posts'
     queryset = Post.objects.all().order_by('-posted_at')
+
+class FriendSuggestionView(LoginRequiredMixin, ListView):
+    model = CustomUser
+    template_name = 'network/friend_suggestions.html'
+    context_object_name = 'suggested_users'
+
+    def get_queryset(self):
+        user = self.request.user
+
+        sent_requests = FriendRequest.objects.filter(sender=user, accepted=False).values_list('receiver_id', flat=True)
+        received_requests = FriendRequest.objects.filter(receiver=user, accepted=False).values_list('sender_id', flat=True)
+
+        friend_ids = [u.id for u in user.friends]
+
+        excluded_ids = friend_ids + [user.id] + list(sent_requests) + list(received_requests)
+
+        candidates = CustomUser.objects.exclude(id__in=excluded_ids).exclude(is_superuser=True)
+
+        return random.sample(list(candidates), min(len(candidates), 10))
