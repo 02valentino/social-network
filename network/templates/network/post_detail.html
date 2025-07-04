@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+  <a href="javascript:history.back()">⬅ Back</a>
   <h2>{{ post.author.username }}'s Post</h2>
   <p>{{ post.content }}</p>
   <p><small>Posted at {{ post.posted_at }}</small></p>

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+  <a href="{% url 'profile' username=profile_user.username %}">⬅ Back to Profile</a>
   <h2>{{ profile_user.username }}'s Friends</h2>
   {% if friends %}
     <ul>
