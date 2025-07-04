@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+  <a href="javascript:history.back()">⬅ Back</a>
   <h2>New Post</h2>
   <form method="post">
       {% csrf_token %}
