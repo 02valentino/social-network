@@ -168,7 +168,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
-    fields = ['content']
+    fields = ['content', 'visibility']
     template_name = 'network/edit_post.html'
 
     def get_success_url(self):
@@ -332,11 +332,18 @@ class PostLikesListView(LoginRequiredMixin, DetailView):
         context['liked_users'] = self.object.liked_by.all()
         return context
 
-class ExploreView(LoginRequiredMixin, ListView):
+class ExploreView(ListView):
     model = Post
-    template_name = 'network/explore.html'
+    template_name = 'explore.html'
     context_object_name = 'posts'
-    queryset = Post.objects.all().order_by('-posted_at')
+
+    def get_queryset(self):
+        public_users = User.objects.filter(is_private=False)
+
+        return Post.objects.filter(
+            visibility='public',
+            author__in=public_users
+        ).order_by('-posted_at')
 
 class FriendSuggestionView(LoginRequiredMixin, ListView):
     model = CustomUser
