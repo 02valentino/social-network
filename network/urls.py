@@ -10,6 +10,7 @@ from .views import PostEditView, PostDeleteView
 from .views import CommentDeleteView
 from .views import UserSearchView
 from .views import NotificationListView
+from .views import FriendsListView, UnfriendUserView
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post-list'),
@@ -25,4 +26,6 @@ urlpatterns = [
     path('comment/<int:pk>/delete/', CommentDeleteView.as_view(), name='delete-comment'),
     path('search/', UserSearchView.as_view(), name='user-search'),
     path('notifications/', NotificationListView.as_view(), name='notifications'),
+    path('profile/<str:username>/friends/', FriendsListView.as_view(), name='user-friends'),
+    path('unfriend/<str:username>/', UnfriendUserView.as_view(), name='unfriend-user'),
 ]
