@@ -98,6 +98,30 @@ class UnfriendUserView(LoginRequiredMixin, View):
 
         return redirect('profile', username=other_user.username)
 
+class SendFriendRequestView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        to_user = get_object_or_404(CustomUser, username=username)
+
+        if to_user != request.user:
+            # Delete older unaccepted friend requests
+            FriendRequest.objects.filter(
+                sender=request.user,
+                receiver=to_user,
+                accepted=False
+            ).delete()
+
+            # Delete old notifications
+            Notification.objects.filter(
+                sender=request.user,
+                recipient=to_user,
+                message__icontains="sent you a friend request"
+            ).delete()
+
+            # Create new request and notification
+            FriendRequest.objects.create(sender=request.user, receiver=to_user)
+
+        return redirect('profile', username=username)
+
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
