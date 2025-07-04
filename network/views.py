@@ -330,3 +330,9 @@ class PostLikesListView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['liked_users'] = self.object.liked_by.all()
         return context
+
+class ExploreView(LoginRequiredMixin, ListView):
+    model = Post
+    template_name = 'network/explore.html'
+    context_object_name = 'posts'
+    queryset = Post.objects.all().order_by('-posted_at')
