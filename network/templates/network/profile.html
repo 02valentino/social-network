@@ -53,6 +53,10 @@
     {% if posts %}
       <ul>
         {% for post in posts %}
+          {% if user == post.author %}
+            <a href="{% url 'edit-post' post.pk %}">Edit</a>
+            <a href="{% url 'delete-post' post.pk %}">Delete</a>
+          {% endif %}
           <li>{{ post.content }} <em>— {{ post.posted_at|date:"M d, Y H:i" }}</em></li>
           {% include "network/partials/like_button.html" with post=post %}
         {% endfor %}
