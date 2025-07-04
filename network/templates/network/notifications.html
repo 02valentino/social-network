@@ -11,6 +11,17 @@
           <strong>{{ notification.sender.username }}</strong>: {{ notification.message }}
           <br>
           <small>{{ notification.timestamp|naturaltime }}</small>
+
+          {% if "sent you a friend request" in notification.message and notification.sender.username in active_friend_requests %}
+            <form method="post" action="{% url 'accept-friend-request' notification.sender.username %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit">Accept</button>
+            </form>
+            <form method="post" action="{% url 'decline-friend-request' notification.sender.username %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit">Decline</button>
+            </form>
+          {% endif %}
         </li>
       {% endfor %}
     </ul>
