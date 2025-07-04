@@ -128,6 +128,20 @@ class CancelFriendRequestView(LoginRequiredMixin, View):
         FriendRequest.objects.filter(sender=request.user, receiver=to_user, accepted=False).delete()
         return redirect('profile', username=username)
 
+class AcceptFriendRequestView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        from_user = get_object_or_404(CustomUser, username=username)
+        fr = FriendRequest.objects.filter(sender=from_user, receiver=request.user, accepted=False).first()
+        if fr:
+            fr.accepted = True
+            fr.save()
+
+            Notification.objects.filter(
+                sender=from_user,
+                recipient=request.user,
+                message__icontains="sent you a friend request"
+            ).update(message=f"You and {from_user.username} are now friends.")
+        return redirect('profile', username=from_user.username)
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
