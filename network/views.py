@@ -122,6 +122,12 @@ class SendFriendRequestView(LoginRequiredMixin, View):
 
         return redirect('profile', username=username)
 
+class CancelFriendRequestView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        to_user = get_object_or_404(CustomUser, username=username)
+        FriendRequest.objects.filter(sender=request.user, receiver=to_user, accepted=False).delete()
+        return redirect('profile', username=username)
+
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
