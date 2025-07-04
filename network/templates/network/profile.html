@@ -48,7 +48,7 @@
   {% endif %}
 {% endif %}
 
-  {% if user.is_authenticated %}
+  {% if user == profile_user or is_friend %}
     <h3>Posts by {{ profile_user.username }}</h3>
     {% if posts %}
       <ul>
@@ -65,6 +65,6 @@
       <p>No posts yet.</p>
     {% endif %}
   {% else %}
-    <p><em>You must be logged in to view this user's posts.</em></p>
+    <p><em>You must be friends with {{ profile_user.username }} to view their posts.</em></p>
   {% endif %}
 {% endblock %}
