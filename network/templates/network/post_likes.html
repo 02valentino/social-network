@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+  <a href="javascript:history.back()">⬅ Back</a>
+  <h2>People who liked this post:</h2>
+  <ul>
+    {% for user in liked_users %}
+      <li><a href="{% url 'profile' username=user.username %}">{{ user.username }}</a></li>
+    {% empty %}
+      <p>No likes yet.</p>
+    {% endfor %}
+  </ul>
+{% endblock %}
