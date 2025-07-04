@@ -206,6 +206,14 @@ class PostDetailView(DetailView, FormView):
         comment.author = self.request.user
         comment.post = self.get_object()
         comment.save()
+
+        if self.request.user != comment.post.author:
+            Notification.objects.create(
+                sender=self.request.user,
+                recipient=comment.post.author,
+                message=f"{self.request.user.username} commented on your post."
+            )
+
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
