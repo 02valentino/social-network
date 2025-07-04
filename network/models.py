@@ -2,6 +2,12 @@ from django.db import models
 from django.conf import settings
 
 class Post(models.Model):
+    VISIBILITY_CHOICES = [
+        ('public', 'Public'),
+        ('friends', 'Friends only'),
+        ('private', 'Private'),
+    ]
+
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField()
     posted_at = models.DateTimeField(auto_now_add=True)
@@ -16,6 +22,12 @@ class Post(models.Model):
     @property
     def comment_count(self):
         return self.comments.count()
+
+    visibility = models.CharField(
+        max_length=10,
+        choices=VISIBILITY_CHOICES,
+        default='public'
+    )
 
 class FriendRequest(models.Model):
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_requests', on_delete=models.CASCADE)
