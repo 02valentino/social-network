@@ -9,6 +9,7 @@ from .forms import PostForm, CommentForm
 from django.contrib import messages
 from users.models import CustomUser
 from django.views import View
+from django.http import HttpResponseRedirect
 from django.db.models import Q
 
 User = get_user_model()
@@ -313,3 +314,12 @@ class NotificationListView(ListView):
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user).order_by('-timestamp')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        active_friend_requests = FriendRequest.objects.filter(
+            receiver=self.request.user,
+            accepted=False
+        ).values_list('sender__username', flat=True)
+        context['active_friend_requests'] = active_friend_requests
+        return context
