@@ -71,6 +71,19 @@ class ProfileView(DetailView):
         context['posts'] = profile_user.posts.order_by('-posted_at')
         return context
 
+class FriendsListView(DetailView):
+    model = CustomUser
+    template_name = 'network/friends_list.html'
+    context_object_name = 'profile_user'
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['friends'] = self.get_object().friends
+        return context
+
+
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
