@@ -15,6 +15,7 @@ class CustomUser(AbstractUser):
     @property
     def friends(self):
         accepted_requests = FriendRequest.objects.filter(
-            (Q(sender=self) | Q(receiver=self)) & Q(accepted=True)
+            Q(sender=self) | Q(receiver=self),
+            accepted=True
         )
         return [fr.receiver if fr.sender == self else fr.sender for fr in accepted_requests]
