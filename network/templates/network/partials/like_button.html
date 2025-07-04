@@ -1,4 +1,5 @@
 <form action="{% url 'toggle-like' post.pk %}" method="post" style="display:inline;">
+  <a href="{% url 'post-likes' post.pk %}">{{ post.total_likes }} Likes</a>
   {% csrf_token %}
   <button type="submit">
     {% if user in post.liked_by.all %}
@@ -6,6 +7,5 @@
     {% else %}
       🤍 Like
     {% endif %}
-    ({{ post.total_likes }})
   </button>
 </form>

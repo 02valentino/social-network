@@ -20,6 +20,7 @@
     <a href="{% url 'post-detail' post.pk %}">
       <button type="button">Comment</button>
     </a>
+    <a href="{% url 'post-detail' post.pk %}">{{ post.comment_count }} comments</a>
   {% empty %}
     <p>No posts yet.</p>
   {% endfor %}
