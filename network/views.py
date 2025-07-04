@@ -9,7 +9,6 @@ from .forms import PostForm, CommentForm
 from django.contrib import messages
 from users.models import CustomUser
 from django.views import View
-from django.http import HttpResponseRedirect
 from django.db.models import Q
 
 User = get_user_model()
@@ -24,9 +23,10 @@ class PostListView(ListView):
         user = self.request.user
         if user.is_authenticated:
             friends = user.friends
-            return Post.objects.filter(author__in=friends).order_by('-posted_at')
-        else:
-            return Post.objects.none()
+            return Post.objects.filter(
+                Q(author__in=friends) | Q(author=user)
+            ).order_by('-posted_at')
+        return Post.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -48,24 +48,27 @@ class ProfileView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        profile_user = self.object
+        profile_user = self.get_object()
         user = self.request.user
 
-        context['posts'] = profile_user.posts.all().order_by('-posted_at')
+        if user.is_authenticated and user != profile_user:
+            context['request_sent'] = FriendRequest.objects.filter(sender=user, receiver=profile_user,
+                                                                   accepted=False).exists()
+            context['request_received'] = FriendRequest.objects.filter(sender=profile_user, receiver=user,
+                                                                       accepted=False).exists()
+            context['is_friend'] = FriendRequest.objects.filter(
+                Q(sender=user, receiver=profile_user) | Q(sender=profile_user, receiver=user),
+                accepted=True
+            ).exists()
+        else:
+            context['request_sent'] = False
+            context['request_received'] = False
+            context['is_friend'] = False
 
-        context['is_friend'] = FriendRequest.objects.filter(
-            (Q(sender=user, receiver=profile_user) | Q(sender=profile_user, receiver=user)) &
-            Q(accepted=True)
-        ).exists()
-
-        context['request_sent'] = FriendRequest.objects.filter(
-            sender=user, receiver=profile_user, accepted=False
-        ).exists()
-
-        context['request_received'] = FriendRequest.objects.filter(
-            sender=profile_user, receiver=user, accepted=False
-        ).exists()
-
+        context['posts_count'] = profile_user.posts.count()
+        context['friends_count'] = len(profile_user.friends)
+        context['friends'] = profile_user.friends
+        context['posts'] = profile_user.posts.order_by('-posted_at')
         return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
