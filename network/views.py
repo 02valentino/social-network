@@ -83,6 +83,22 @@ class FriendsListView(DetailView):
         context['friends'] = self.get_object().friends
         return context
 
+class UnfriendUserView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        user = request.user
+        other_user = get_object_or_404(CustomUser, username=username)
+
+        friend_request = FriendRequest.objects.filter(
+            Q(sender=user, receiver=other_user) | Q(sender=other_user, receiver=user),
+            accepted=True
+        ).first()
+
+        if friend_request:
+            friend_request.delete()
+
+        return redirect('profile', username=other_user.username)
+
+
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
