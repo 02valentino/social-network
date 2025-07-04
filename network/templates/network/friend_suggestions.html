@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>People You May Know</h2>
+
+  {% if suggested_users %}
+    <ul>
+      {% for user in suggested_users %}
+        <li>
+          <a href="{% url 'profile' user.username %}">{{ user.username }}</a>
+          <form action="{% url 'send-friend-request' user.username %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Add Friend</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No suggestions at the moment.</p>
+  {% endif %}
+{% endblock %}
