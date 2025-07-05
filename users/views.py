@@ -5,12 +5,26 @@ from .forms import CustomUserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import UpdateView
 from .forms import ProfileUpdateForm
+from django.contrib.auth.views import LoginView
+from django.contrib import messages
+from django.shortcuts import redirect
 
 class SignupView(CreateView):
     model = CustomUser
     form_class = CustomUserCreationForm
     template_name = 'registration/signup.html'
     success_url = reverse_lazy('login')
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+    redirect_authenticated_user = True
+
+    def form_valid(self, form):
+        user = form.get_user()
+        if user.is_banned:
+            messages.error(self.request, "🚫 Your account has been banned.")
+            return redirect('login')
+        return super().form_valid(form)
 
 class EditProfileView(LoginRequiredMixin, UpdateView):
     model = CustomUser
