@@ -15,9 +15,11 @@ from .views import SendFriendRequestView, CancelFriendRequestView, AcceptFriendR
 from .views import PostLikesListView
 from .views import ExploreView
 from .views import FriendSuggestionView
+from .views import welcome_view
 
 urlpatterns = [
-    path('', PostListView.as_view(), name='post-list'),
+    path('', welcome_view, name='welcome'),
+    path('posts/', PostListView.as_view(), name='post-list'),
     path('profile/<str:username>/', ProfileView.as_view(), name='profile'),
     path('post/new/', PostCreateView.as_view(), name='post-create'),
     path('moderator/', ModeratorDashboardView.as_view(), name='moderator-dashboard'),
