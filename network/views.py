@@ -1,7 +1,7 @@
 from django.views.generic import ListView, TemplateView, DetailView, FormView, UpdateView, DeleteView
 from .models import Post, Comment, Notification, FriendRequest
 from django.contrib.auth import get_user_model
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views.generic.edit import CreateView
 from django.urls import reverse, reverse_lazy
@@ -13,6 +13,13 @@ from django.db.models import Q
 import random
 
 User = get_user_model()
+
+def welcome_view(request):
+    if request.user.is_authenticated:
+        return redirect('post-list')
+    return render(request, 'network/welcome.html', {
+        'show_auth_links': False
+    })
 
 class PostListView(ListView):
     model = Post
