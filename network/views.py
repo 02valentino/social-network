@@ -345,11 +345,8 @@ class ExploreView(ListView):
     context_object_name = 'posts'
 
     def get_queryset(self):
-        public_users = User.objects.filter(is_private=False)
-
         return Post.objects.filter(
-            visibility='public',
-            author__in=public_users
+            visibility='public'
         ).order_by('-posted_at')
 
 class FriendSuggestionView(LoginRequiredMixin, ListView):
