@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
   {% if profile_user.profile_picture %}
     <img src="{{ profile_user.profile_picture.url }}" alt="Profile Picture">
+  {% else %}
+    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile" style="width:100px;height:100px;">
   {% endif %}
 
-  <h2>{{ profile_user.username }}</h2>
+  <h2>{{ profile_user.first_name }} {{ profile_user.last_name }}</h2>
+  <h3>@{{ profile_user.username }}</h3>
 
   <p><strong>Posts:</strong> {{ posts_count }}</p>
   <p>
