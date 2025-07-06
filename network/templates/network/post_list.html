@@ -2,20 +2,31 @@
 
 {% block content %}
   <h2>Latest Posts</h2>
+
   {% for post in posts %}
     {% if user == post.author or user.groups.all.0.name == 'Moderator' %}
       <a href="{% url 'edit-post' post.pk %}">Edit</a>
       <a href="{% url 'delete-post' post.pk %}">Delete</a>
     {% endif %}
+
     <div>
-      <strong>
-        <a href="{% url 'profile' post.author.username %}">
-          {{ post.author.username }}
-        </a>
-      </strong> - {{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}<br>
-      <p>{{ post.content }}</p>
-      <hr>
+      <div>
+        {% if post.author.profile_picture %}
+          <img src="{{ post.author.profile_picture.url }}" alt="User Picture">
+        {% endif %}
+        <strong>
+          <a href="{% url 'profile' post.author.username %}">
+            {{ post.author.username }}
+          </a>
+        </strong>
+      </div>
+      <div>
+        <p>{{ post.content }}</p>
+        <small>{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</small>
+        <hr>
+      </div>
     </div>
+
     {% include "network/partials/like_button.html" with post=post %}
     <a href="{% url 'post-detail' post.pk %}">
       <button type="button">Comment</button>
