@@ -7,7 +7,8 @@ class CustomUser(AbstractUser):
     bio = models.TextField(blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
     is_banned = models.BooleanField(default=False)  # used by moderators
-    is_private = models.BooleanField(default=False)
+    birthday = models.DateField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return self.username
