@@ -26,7 +26,7 @@ class Post(models.Model):
     visibility = models.CharField(
         max_length=10,
         choices=VISIBILITY_CHOICES,
-        default='public'
+        default='friends',
     )
 
 class FriendRequest(models.Model):
