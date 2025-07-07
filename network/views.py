@@ -248,6 +248,7 @@ class ToggleBanUserView(LoginRequiredMixin, UserPassesTestMixin, View):
         user = get_object_or_404(CustomUser, id=user_id)
         user.is_banned = not user.is_banned
         user.save()
+        messages.success(request, "User banned.")
         return redirect('moderator-dashboard')
 
 class DeleteAnyPostView(LoginRequiredMixin, UserPassesTestMixin, View):
