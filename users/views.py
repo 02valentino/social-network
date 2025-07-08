@@ -8,12 +8,19 @@ from .forms import ProfileUpdateForm
 from django.contrib.auth.views import LoginView
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.contrib.auth.models import Group
 
 class SignupView(CreateView):
     model = CustomUser
     form_class = CustomUserCreationForm
     template_name = 'registration/signup.html'
     success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        users_group, _ = Group.objects.get_or_create(name='RegularUsers')
+        self.object.groups.add(users_group)
+        return response
 
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
