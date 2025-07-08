@@ -20,3 +20,8 @@ class CustomUser(AbstractUser):
             accepted=True
         )
         return [fr.receiver if fr.sender == self else fr.sender for fr in accepted_requests]
+
+    class Meta:
+        permissions = [
+            ("can_ban_users", "Can ban or unban users"),
+        ]
