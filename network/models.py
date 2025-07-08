@@ -29,6 +29,11 @@ class Post(models.Model):
         default='friends',
     )
 
+    class Meta:
+        permissions = [
+            ("can_delete_any_post", "Can delete any post"),
+        ]
+
 class FriendRequest(models.Model):
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_requests', on_delete=models.CASCADE)
     receiver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_requests', on_delete=models.CASCADE)
