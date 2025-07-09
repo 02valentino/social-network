@@ -52,7 +52,7 @@ class CustomUserCreationForm(UserCreationForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['profile_picture', 'bio', 'birthday', 'location']
+        fields = ['profile_picture', 'first_name', 'last_name', 'bio', 'birthday', 'location']
         widgets = {
             'birthday': forms.DateInput(attrs={'type': 'date'}),
         }
