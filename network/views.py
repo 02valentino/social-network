@@ -198,6 +198,32 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             self.request.user.groups.filter(name='Moderator').exists()
         )
 
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            context = self.get_context_data()
+            from django.template.loader import render_to_string
+            html = render_to_string(self.template_name, context, request)
+            from django.http import HttpResponse
+            return HttpResponse(html)
+
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object.delete()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Post deleted successfully',
+                'redirect_url': self.success_url
+            })
+
+        return super().post(request, *args, **kwargs)
+
 class PostDetailView(DetailView, FormView):
     model = Post
     template_name = 'network/post_detail.html'
@@ -219,6 +245,20 @@ class PostDetailView(DetailView, FormView):
                 recipient=comment.post.author,
                 message=f"{self.request.user.username} commented on your post."
             )
+
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'comment': {
+                    'id': comment.pk,
+                    'content': comment.content,
+                    'author': comment.author.username,
+                    'author_avatar': comment.author.profile_picture.url if comment.author.profile_picture else None,
+                    'created_at': comment.created_at.strftime('%b %d, %Y %H:%M'),
+                    'can_edit': True
+                },
+                'comment_count': self.get_object().comment_count
+            })
 
         return super().form_valid(form)
 
@@ -309,6 +349,37 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         comment = self.get_object()
         user = self.request.user
         return user == comment.author or user.groups.filter(name='Moderator').exists()
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            context = self.get_context_data()
+            from django.template.loader import render_to_string
+            html = render_to_string(self.template_name, context, request)
+            from django.http import HttpResponse
+            return HttpResponse(html)
+
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        post_pk = self.object.post.pk
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object.delete()
+
+            from .models import Post
+            post = Post.objects.get(pk=post_pk)
+            comment_count = post.comment_count
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Comment deleted successfully',
+                'comment_count': comment_count
+            })
+
+        return super().post(request, *args, **kwargs)
 
 class CommentEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Comment
