@@ -186,6 +186,65 @@ class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         post = self.get_object()
         return self.request.user == post.author
 
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            post = self.get_object()
+            return JsonResponse({
+                'content': post.content,
+                'visibility': post.visibility,
+                'form_html': self.render_edit_form(post)
+            })
+        return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            post = form.save()
+            return JsonResponse({
+                'success': True,
+                'content': post.content,
+                'visibility': post.get_visibility_display()
+            })
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+        return super().form_invalid(form)
+
+    def render_edit_form(self, post):
+        from django import forms
+
+        class PostEditForm(forms.ModelForm):
+            class Meta:
+                model = Post
+                fields = ['content', 'visibility']
+                widgets = {
+                    'content': forms.Textarea(attrs={
+                        'class': 'form-control',
+                        'rows': 4,
+                        'placeholder': 'What\'s on your mind?'
+                    }),
+                    'visibility': forms.Select(attrs={
+                        'class': 'form-select'
+                    })
+                }
+
+        form = PostEditForm(instance=post)
+        form_html = f'''
+        <div class="mb-3">
+            <label for="{form['content'].id_for_label}" class="form-label">Content</label>
+            {form['content']}
+        </div>
+        <div class="mb-3">
+            <label for="{form['visibility'].id_for_label}" class="form-label">Visibility</label>
+            {form['visibility']}
+        </div>
+        '''
+        return form_html
+
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
     template_name = 'network/delete_post.html'
@@ -320,22 +379,37 @@ class ToggleLikeView(View):
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
         user = request.user
-        if user.is_authenticated:
-            if user in post.liked_by.all():
-                post.liked_by.remove(user)
-                Notification.objects.filter(
+
+        if not user.is_authenticated:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': 'Authentication required'}, status=401)
+            return redirect('login')
+
+        is_liked = user in post.liked_by.all()
+
+        if is_liked:
+            post.liked_by.remove(user)
+            Notification.objects.filter(
+                sender=user,
+                recipient=post.author,
+                message__icontains="liked your post"
+            ).delete()
+        else:
+            post.liked_by.add(user)
+            if user != post.author:
+                Notification.objects.create(
                     sender=user,
                     recipient=post.author,
-                    message__icontains="liked your post"
-                ).delete()
-            else:
-                post.liked_by.add(user)
-                if user != post.author:
-                    Notification.objects.create(
-                        sender=user,
-                        recipient=post.author,
-                        message="liked your post."
-                    )
+                    message=f"{user.username} liked your post."
+                )
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'liked': not is_liked,
+                'like_count': post.total_likes,
+                'like_icon': '❤️' if not is_liked else '🤍'
+            })
+
         return redirect(request.META.get('HTTP_REFERER', 'post-list'))
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -433,7 +507,10 @@ class UserSearchView(ListView):
         if query:
             return CustomUser.objects.filter(
                 Q(username__icontains=query) |
-                Q(location__icontains=query)
+                Q(email__icontains=query) |
+                Q(location__icontains=query) |
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query)
             ).exclude(is_superuser=True)
         return CustomUser.objects.none()
 
