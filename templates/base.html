@@ -27,7 +27,7 @@
                 {% endif %}
             </a>
             {% if is_moderator %}
-            <a href="{% url 'moderator-dashboard' %}">Moderator Panel</a>
+              <a href="{% url 'moderator-dashboard' %}">Moderator Panel</a>
             {% endif %}
             <form method="post" action="{% url 'logout' %}" style="display:inline;">
                 {% csrf_token %}

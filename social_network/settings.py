@@ -73,6 +73,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'network.context_processors.unread_notifications',
+                'network.context_processors.is_moderator',
             ],
         },
     },

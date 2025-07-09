@@ -4,8 +4,10 @@
   <h2>Latest Posts</h2>
 
   {% for post in posts %}
-    {% if user == post.author or user.groups.all.0.name == 'Moderator' %}
+    {% if user == post.author %}
       <a href="{% url 'edit-post' post.pk %}">Edit</a>
+      <a href="{% url 'delete-post' post.pk %}">Delete</a>
+    {% elif user.groups.all.0.name == 'Moderator' %}
       <a href="{% url 'delete-post' post.pk %}">Delete</a>
     {% endif %}
 
