@@ -2,6 +2,7 @@ from django.views.generic import ListView, TemplateView, DetailView, FormView, U
 from .models import Post, Comment, Notification, FriendRequest
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404, render
+from django.http import JsonResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views.generic.edit import CreateView
 from django.urls import reverse, reverse_lazy
@@ -308,6 +309,48 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         comment = self.get_object()
         user = self.request.user
         return user == comment.author or user.groups.filter(name='Moderator').exists()
+
+class CommentEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'network/comment_edit.html'
+
+    def get_success_url(self):
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+
+    def test_func(self):
+        comment = self.get_object()
+        user = self.request.user
+        return user == comment.author or user.groups.filter(name='Moderator').exists()
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            import json
+            try:
+                data = json.loads(request.body)
+                content = data.get('content', '').strip()
+
+                if not content:
+                    return JsonResponse({'success': False, 'error': 'Comment cannot be empty'})
+
+                self.object.content = content
+                self.object.save()
+
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Comment updated successfully'
+                })
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'error': 'Invalid data'})
+
+        return super().post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['post'] = self.object.post
+        return context
 
 class UserSearchView(ListView):
     model = CustomUser

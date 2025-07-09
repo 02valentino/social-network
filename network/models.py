@@ -16,6 +16,7 @@ class Post(models.Model):
     def __str__(self):
         return f"{self.author.username}'s post at {self.posted_at.strftime('%Y-%m-%d %H:%M')}"
 
+    @property
     def total_likes(self):
         return self.liked_by.count()
 

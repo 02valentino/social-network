@@ -7,7 +7,7 @@ from .views import ToggleBanUserView, DeleteAnyPostView
 from .views import ToggleLikeView
 from .views import PostDetailView
 from .views import PostEditView, PostDeleteView
-from .views import CommentDeleteView
+from .views import CommentDeleteView, CommentEditView
 from .views import UserSearchView
 from .views import NotificationListView, NotificationDeleteView, DeleteAllNotificationsView
 from .views import FriendsListView, UnfriendUserView
@@ -30,6 +30,7 @@ urlpatterns = [
     path('post/<int:pk>/edit/', PostEditView.as_view(), name='edit-post'),
     path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='delete-post'),
     path('comment/<int:pk>/delete/', CommentDeleteView.as_view(), name='delete-comment'),
+    path('comment/<int:pk>/edit/', CommentEditView.as_view(), name='edit-comment'),
     path('search/', UserSearchView.as_view(), name='user-search'),
     path('notifications/', NotificationListView.as_view(), name='notifications'),
     path('notifications/delete/<int:pk>/', NotificationDeleteView.as_view(), name='delete-notification'),

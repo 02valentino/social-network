@@ -14,10 +14,23 @@ class PostForm(forms.ModelForm):
             'content': '',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['content'].label = 'Share your thoughts'
+        self.fields['visibility'].label = 'Who can see this?'
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['content']
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Write a comment...'})
+            'content': forms.Textarea(attrs={
+                'rows': 2,
+                'placeholder': 'Write a comment...',
+                'class': 'form-control'
+            })
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['content'].label = ''
