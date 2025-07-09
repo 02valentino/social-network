@@ -7,8 +7,11 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ['content', 'visibility']
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 4, 'placeholder': "What's on your mind?"}),
+            'content': forms.Textarea(attrs={'rows': 4, 'placeholder': "What's on your mind?", 'class': 'form-control'}),
             'visibility': forms.Select(attrs={'class': 'form-control'})
+        }
+        labels = {
+            'content': '',
         }
 
 class CommentForm(forms.ModelForm):

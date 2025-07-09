@@ -3,7 +3,7 @@
 {% block content %}
   <h2>Search Users</h2>
   <form method="get" action="{% url 'user-search' %}">
-    <input type="text" name="q" value="{{ query }}" placeholder="Search by username or email">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search by username or location">
     <button type="submit">Search</button>
   </form>
 
