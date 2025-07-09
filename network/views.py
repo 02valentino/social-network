@@ -519,7 +519,7 @@ class UserSearchView(ListView):
         context['query'] = self.request.GET.get('q', '')
         return context
 
-class NotificationListView(ListView):
+class NotificationListView(LoginRequiredMixin, ListView):
     model = Notification
     template_name = 'network/notifications.html'
     context_object_name = 'notifications'
@@ -538,14 +538,54 @@ class NotificationListView(ListView):
         context['active_friend_requests'] = active_friend_requests
         return context
 
+class NotificationUpdateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        notification_id = request.POST.get('notification_id')
+        mark_all = request.POST.get('mark_all', False)
+
+        if mark_all:
+            Notification.objects.filter(
+                recipient=request.user,
+                read=False
+            ).update(read=True)
+        elif notification_id:
+            Notification.objects.filter(
+                id=notification_id,
+                recipient=request.user
+            ).update(read=True)
+
+
+        unread_count = Notification.objects.filter(
+            recipient=request.user,
+            read=False
+        ).count()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'unread_count': unread_count
+            })
+
+        return redirect('notifications')
+
+class NotificationCountView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        unread_count = Notification.objects.filter(
+            recipient=request.user,
+            read=False
+        ).count()
+
+        return JsonResponse({
+            'unread_count': unread_count
+        })
+
 class NotificationDeleteView(DeleteView):
     model = Notification
-    success_url = reverse_lazy('notifications')  # or your URL name
+    success_url = reverse_lazy('notifications')
     template_name = 'network/confirm_delete.html'
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user)
-
 
 class DeleteAllNotificationsView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):

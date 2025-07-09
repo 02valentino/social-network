@@ -9,7 +9,7 @@ from .views import PostDetailView
 from .views import PostEditView, PostDeleteView
 from .views import CommentDeleteView, CommentEditView
 from .views import UserSearchView
-from .views import NotificationListView, NotificationDeleteView, DeleteAllNotificationsView
+from .views import NotificationListView, NotificationDeleteView, DeleteAllNotificationsView, NotificationUpdateView, NotificationCountView
 from .views import FriendsListView, UnfriendUserView
 from .views import SendFriendRequestView, CancelFriendRequestView, AcceptFriendRequestView, DeclineFriendRequestView
 from .views import PostLikesListView
@@ -35,6 +35,8 @@ urlpatterns = [
     path('notifications/', NotificationListView.as_view(), name='notifications'),
     path('notifications/delete/<int:pk>/', NotificationDeleteView.as_view(), name='delete-notification'),
     path('notifications/delete-all/', DeleteAllNotificationsView.as_view(), name='delete-all-notifications'),
+    path('notifications/update/', NotificationUpdateView.as_view(), name='notification-update'),
+    path('notifications/count/', NotificationCountView.as_view(), name='notification-count'),
     path('profile/<str:username>/friends/', FriendsListView.as_view(), name='user-friends'),
     path('unfriend/<str:username>/', UnfriendUserView.as_view(), name='unfriend-user'),
     path('friend-request/send/<str:username>/', SendFriendRequestView.as_view(), name='send-friend-request'),
