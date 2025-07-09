@@ -1,14 +1,22 @@
 {% extends 'base.html' %}
 {% load humanize %}
 
-
 {% block content %}
   <h2>Notifications</h2>
+
   {% if notifications %}
+    <form method="post" action="{% url 'delete-all-notifications' %}" style="margin-bottom: 10px;">
+      {% csrf_token %}
+      <button type="submit">Clear All</button>
+    </form>
     <ul>
       {% for notification in notifications %}
-        <li>
-          <strong>{{ notification.sender.username }}</strong>: {{ notification.message }}
+        <li class="{% if not notification.read %}unread{% endif %}">
+          <strong>
+            <a href="{% url 'profile' notification.sender.username %}">
+              {{ notification.sender.username }}
+            </a>
+          </strong> {{ notification.message|safe }}
           <br>
           <small>{{ notification.timestamp|naturaltime }}</small>
 
@@ -22,6 +30,11 @@
               <button type="submit">Decline</button>
             </form>
           {% endif %}
+
+          <form method="post" action="{% url 'delete-notification' notification.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Delete</button>
+          </form>
         </li>
       {% endfor %}
     </ul>
