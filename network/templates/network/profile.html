@@ -75,8 +75,16 @@
             <a href="{% url 'edit-post' post.pk %}">Edit</a>
             <a href="{% url 'delete-post' post.pk %}">Delete</a>
           {% endif %}
-          <li>{{ post.content }} <em>— {{ post.posted_at|date:"M d, Y H:i" }}</em></li>
+          <li>
+            {{ post.content }} <em>— {{ post.posted_at|date:"M d, Y H:i" }}</em>
+          </li>
+
           {% include "network/partials/like_button.html" with post=post %}
+
+          <a href="{% url 'post-detail' post.pk %}">
+            <button type="button">Comment</button>
+          </a>
+          <a href="{% url 'post-detail' post.pk %}">{{ post.comment_count }} comments</a>
         {% endfor %}
       </ul>
     {% else %}
