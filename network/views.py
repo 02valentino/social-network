@@ -236,19 +236,33 @@ class ModeratorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['users'] = CustomUser.objects.all()
-        context['posts'] = Post.objects.all().order_by('-posted_at')
+
+        regular_users = CustomUser.objects.filter(
+            is_superuser=False
+        ).exclude(groups__name='Moderator')
+
+        context['users'] = regular_users
+
+        context['posts'] = Post.objects.filter(
+            author__in=regular_users
+        ).order_by('-posted_at')
+
         return context
 
 class ToggleBanUserView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        return self.request.user.groups.filter(name='Moderator').exists()
+        return self.request.user.groups.filter(name="Moderator").exists()
 
     def post(self, request, user_id):
         user = get_object_or_404(CustomUser, id=user_id)
+
+        if user == request.user or user.is_superuser or user.groups.filter(name="Moderator").exists():
+            messages.error(request, "You cannot ban this user.")
+            return redirect('moderator-dashboard')
+
         user.is_banned = not user.is_banned
         user.save()
-        messages.success(request, "User banned.")
+        messages.success(request, f"User {'unbanned' if not user.is_banned else 'banned'}.")
         return redirect('moderator-dashboard')
 
 class DeleteAnyPostView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -279,7 +293,7 @@ class ToggleLikeView(View):
                     Notification.objects.create(
                         sender=user,
                         recipient=post.author,
-                        message=f"{user.username} liked your post."
+                        message="liked your post."
                     )
         return redirect(request.META.get('HTTP_REFERER', 'post-list'))
 
@@ -304,7 +318,8 @@ class UserSearchView(ListView):
         query = self.request.GET.get('q')
         if query:
             return CustomUser.objects.filter(
-                Q(username__icontains=query) | Q(email__icontains=query)
+                Q(username__icontains=query) |
+                Q(location__icontains=query)
             ).exclude(is_superuser=True)
         return CustomUser.objects.none()
 
@@ -319,7 +334,9 @@ class NotificationListView(ListView):
     context_object_name = 'notifications'
 
     def get_queryset(self):
-        return Notification.objects.filter(recipient=self.request.user).order_by('-timestamp')
+        qs = Notification.objects.filter(recipient=self.request.user).order_by('-timestamp')
+        qs.update(read=True)
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -329,6 +346,20 @@ class NotificationListView(ListView):
         ).values_list('sender__username', flat=True)
         context['active_friend_requests'] = active_friend_requests
         return context
+
+class NotificationDeleteView(DeleteView):
+    model = Notification
+    success_url = reverse_lazy('notifications')  # or your URL name
+    template_name = 'network/confirm_delete.html'
+
+    def get_queryset(self):
+        return Notification.objects.filter(recipient=self.request.user)
+
+
+class DeleteAllNotificationsView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        request.user.notifications.all().delete()
+        return redirect('notifications')
 
 class PostLikesListView(LoginRequiredMixin, DetailView):
     model = Post
