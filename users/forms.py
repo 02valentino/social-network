@@ -54,5 +54,14 @@ class ProfileUpdateForm(forms.ModelForm):
         model = CustomUser
         fields = ['profile_picture', 'first_name', 'last_name', 'bio', 'birthday', 'location']
         widgets = {
-            'birthday': forms.DateInput(attrs={'type': 'date'}),
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'birthday': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['profile_picture'].widget.attrs.update({'class': 'form-control'})
+        self.fields['profile_picture'].widget.clear_checkbox_label = ''
+        if hasattr(self.fields['profile_picture'].widget, 'template_name'):
+            self.fields['profile_picture'].widget.template_name = 'django/forms/widgets/file.html'

@@ -1,17 +1,193 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h2>Edit Your Profile</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
 
-    <p>{{ form.profile_picture.label_tag }} {{ form.profile_picture }}</p>
-    <p>{{ form.first_name.label_tag }} {{ form.first_name }}</p>
-    <p>{{ form.last_name.label_tag }} {{ form.last_name }}</p>
-    <p>{{ form.bio.label_tag }} {{ form.bio }}</p>
-    <p>{{ form.birthday.label_tag }} {{ form.birthday }} </p>
-    <p>{{ form.location.label_tag }} {{ form.location }}</p>
+      <div class="text-center mb-4">
+        <h2 class="mb-2">
+          <i class="fas fa-user-edit me-2 text-primary"></i>Edit Your Profile
+        </h2>
+        <p class="text-muted">Update your personal information and preferences</p>
+      </div>
 
-    <button type="submit">Save Changes</button>
-  </form>
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-4 text-center">
+              <div class="mb-3">
+                {% if user.profile_picture %}
+                  <img src="{{ user.profile_picture.url }}"
+                       alt="Current Profile Picture"
+                       class="rounded-circle mb-3"
+                       style="width:120px;height:120px;object-fit:cover;">
+                {% else %}
+                  <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3"
+                       style="width:120px;height:120px;">
+                    <i class="fas fa-user fa-3x text-white"></i>
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                {{ form.profile_picture.label_tag }}
+                {{ form.profile_picture }}
+                {% if form.profile_picture.help_text %}
+                  <div class="form-text">{{ form.profile_picture.help_text }}</div>
+                {% endif %}
+                {% if form.profile_picture.errors %}
+                  <div class="text-danger small">{{ form.profile_picture.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">
+              <i class="fas fa-id-card me-2 text-secondary"></i>Personal Information
+            </h5>
+
+            <div class="mb-3">
+              <label for="{{ form.first_name.id_for_label }}" class="form-label fw-bold">
+                <i class="fas fa-user me-2 text-primary"></i>First Name
+              </label>
+              <input type="text"
+                     class="form-control form-control-lg"
+                     id="{{ form.first_name.id_for_label }}"
+                     name="{{ form.first_name.name }}"
+                     value="{{ form.first_name.value|default:'' }}"
+                     placeholder="Enter your first name">
+              {% if form.first_name.errors %}
+                <div class="text-danger small">{{ form.first_name.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.last_name.id_for_label }}" class="form-label fw-bold">
+                <i class="fas fa-user me-2 text-primary"></i>Last Name
+              </label>
+              <input type="text"
+                     class="form-control form-control-lg"
+                     id="{{ form.last_name.id_for_label }}"
+                     name="{{ form.last_name.name }}"
+                     value="{{ form.last_name.value|default:'' }}"
+                     placeholder="Enter your last name">
+              {% if form.last_name.errors %}
+                <div class="text-danger small">{{ form.last_name.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.bio.id_for_label }}" class="form-label fw-bold">
+                <i class="fas fa-quote-left me-2 text-primary"></i>Bio
+              </label>
+              <textarea class="form-control"
+                        id="{{ form.bio.id_for_label }}"
+                        name="{{ form.bio.name }}"
+                        rows="4"
+                        placeholder="Tell us about yourself...">{{ form.bio.value|default:'' }}</textarea>
+              {% if form.bio.help_text %}
+                <div class="form-text">{{ form.bio.help_text }}</div>
+              {% endif %}
+              {% if form.bio.errors %}
+                <div class="text-danger small">{{ form.bio.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.birthday.id_for_label }}" class="form-label fw-bold">
+                <i class="fas fa-birthday-cake me-2 text-primary"></i>Birthday
+              </label>
+              <input type="date"
+                     class="form-control form-control-lg"
+                     id="{{ form.birthday.id_for_label }}"
+                     name="{{ form.birthday.name }}"
+                     value="{{ form.birthday.value|default:'' }}">
+              {% if form.birthday.help_text %}
+                <div class="form-text">{{ form.birthday.help_text }}</div>
+              {% endif %}
+              {% if form.birthday.errors %}
+                <div class="text-danger small">{{ form.birthday.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-4">
+              <label for="{{ form.location.id_for_label }}" class="form-label fw-bold">
+                <i class="fas fa-map-marker-alt me-2 text-primary"></i>Location
+              </label>
+              <input type="text"
+                     class="form-control form-control-lg"
+                     id="{{ form.location.id_for_label }}"
+                     name="{{ form.location.name }}"
+                     value="{{ form.location.value|default:'' }}"
+                     placeholder="Enter your location">
+              {% if form.location.help_text %}
+                <div class="form-text">{{ form.location.help_text }}</div>
+              {% endif %}
+              {% if form.location.errors %}
+                <div class="text-danger small">{{ form.location.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex gap-3 justify-content-center">
+              <button type="submit" class="btn btn-primary btn-lg px-4">
+                <i class="fas fa-save me-2"></i>Save Changes
+              </button>
+              <a href="{% url 'profile' user.username %}" class="btn btn-outline-secondary btn-lg px-4">
+                <i class="fas fa-times me-2"></i>Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <small class="text-muted">
+          <i class="fas fa-info-circle me-1"></i>
+          Your profile information helps other users find and connect with you.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+}
+
+.btn-outline-secondary:hover {
+  transform: translateY(-1px);
+}
+
+.card {
+  border: none;
+  border-radius: 1rem;
+}
+
+.form-label {
+  color: #495057;
+}
+
+input[type="file"] {
+  padding: 0.5rem;
+  border: 2px dashed #dee2e6;
+  border-radius: 0.5rem;
+  background-color: #f8f9fa;
+}
+
+input[type="file"]:hover {
+  border-color: #0d6efd;
+  background-color: #e3f2fd;
+}
+</style>
 {% endblock %}
