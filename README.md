@@ -67,6 +67,23 @@ A social media platform built with Django featuring user profiles, friend connec
 4. **Create Posts**: Share content with different visibility settings
 5. **Engage**: Like posts, leave comments, and stay connected
 
+
+## 👤 Demo Accounts (For Testing)
+
+Use these demo accounts to explore the platform without signing up:
+
+| Username | Password  | Role        |
+|----------|-----------|-------------|
+| kevin    | demopass  | Moderator   |
+| sara     | demopass  | Regular User|
+| john     | demopass  | Regular User|
+
+✅ You can:
+- Log in and test features like posting, liking, commenting
+- Use Kevin's account to access moderator tools
+- Interact between users to simulate a live social environment
+
+
 ### Main Features
 
 **📝 Creating Posts**
