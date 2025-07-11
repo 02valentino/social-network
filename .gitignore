@@ -14,5 +14,5 @@ __pycache__/
 
 *.log
 
-static/
+/staticfiles/
 media/
