@@ -1,23 +1,131 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-  <a href="{% url 'profile' username=profile_user.username %}">⬅ Back to Profile</a>
-  <h2>{{ profile_user.username }}'s Friends</h2>
-  {% if friends %}
-    <ul>
-      {% for friend in friends %}
-        <li>
-          <a href="{% url 'profile' friend.username %}">{{ friend.username }}</a>
-          {% if user == profile_user %}
-            <form method="post" action="{% url 'unfriend-user' friend.username %}" style="display:inline;">
-              {% csrf_token %}
-              <button type="submit">Unfriend</button>
-            </form>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No friends yet.</p>
-  {% endif %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h2 class="text-primary mb-1">
+            <i class="fas fa-users me-2"></i>{{ profile_user.get_full_name|default:profile_user.username }}'s Friends
+          </h2>
+          <p class="text-muted mb-0">{{ friends|length }} friend{{ friends|length|pluralize }}</p>
+        </div>
+        <a href="{% url 'profile' username=profile_user.username %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-1"></i>Back to Profile
+        </a>
+      </div>
+
+      {% if friends %}
+      <div class="row g-4">
+        {% for friend in friends %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card friend-card h-100">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                {% if friend.profile_picture %}
+                <img
+                  src="{{ friend.profile_picture.url }}"
+                  alt="{{ friend.username }}"
+                  class="rounded-circle friend-avatar"
+                >
+                {% else %}
+                <div class="rounded-circle avatar-placeholder avatar-xl mx-auto">
+                  <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+              </div>
+
+              <h6 class="card-title mb-1">
+                <a href="{% url 'profile' friend.username %}" class="text-decoration-none friend-name-link">
+                  {{ friend.get_full_name|default:friend.username }}
+                </a>
+              </h6>
+              <p class="text-muted small mb-2">@{{ friend.username }}</p>
+              {% if friend.bio %}
+              <p class="text-muted small mb-3" style="height: 40px; overflow: hidden;">
+                {{ friend.bio|truncatechars:60 }}
+              </p>
+              {% else %}
+              <div style="height: 40px;"></div>
+              {% endif %}
+
+              <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'profile' friend.username %}" class="btn btn-outline-success btn-sm">
+                  <i class="fas fa-eye me-1"></i>View Profile
+                </a>
+                {% if user == profile_user %}
+                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#unfriendModal{{ friend.id }}">
+                  <i class="fas fa-user-minus me-1"></i>Unfriend
+                </button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% if user == profile_user %}
+        <div class="modal fade" id="unfriendModal{{ friend.id }}" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class="fas fa-user-minus me-2"></i>Unfriend {{ friend.get_full_name|default:friend.username }}?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p>Are you sure you want to remove <strong>{{ friend.get_full_name|default:friend.username }}</strong> from your friends list?</p>
+                <p class="text-muted small">You can always send them a friend request again later.</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'unfriend-user' friend.username %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-user-minus me-1"></i>Unfriend
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="text-center mt-5 friend-actions">
+        <a href="{% url 'friend-suggestions' %}" class="btn btn-primary me-2">
+          <i class="fas fa-user-plus me-1"></i>Find More Friends
+        </a>
+        <a href="{% url 'user-search' %}" class="btn btn-outline-primary">
+          <i class="fas fa-search me-1"></i>Search Users
+        </a>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <div class="mb-4">
+          <i class="fas fa-user-friends text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+        </div>
+        {% if user == profile_user %}
+        <h4 class="text-muted mb-3">You don't have any friends yet</h4>
+        <p class="text-muted mb-4">Start connecting with people to build your network!</p>
+        <div class="d-flex gap-3 justify-content-center friend-actions">
+          <a href="{% url 'friend-suggestions' %}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-1"></i>Find Friends
+          </a>
+          <a href="{% url 'user-search' %}" class="btn btn-outline-primary">
+            <i class="fas fa-search me-1"></i>Search Users
+          </a>
+        </div>
+        {% else %}
+        <h4 class="text-muted mb-3">{{ profile_user.get_full_name|default:profile_user.username }} hasn't added any friends yet</h4>
+        <p class="text-muted">When they connect with people, you'll see them here.</p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

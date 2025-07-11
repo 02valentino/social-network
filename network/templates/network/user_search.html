@@ -1,24 +1,153 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>Search Users</h2>
-  <form method="get" action="{% url 'user-search' %}">
-    <input type="text" name="q" value="{{ query }}" placeholder="Search by username or location">
-    <button type="submit">Search</button>
-  </form>
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="text-center mb-4">
+        <h2 class="mb-2">
+          <i class="fas fa-search me-2 text-primary"></i>Search Users
+        </h2>
+        <p class="text-muted">Find people by username, name, or location</p>
+      </div>
+
+      <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+          <form method="get" action="{% url 'user-search' %}">
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input type="text"
+                     name="q"
+                     value="{{ query }}"
+                     placeholder="Search by username, name, or location"
+                     class="form-control form-control-lg"
+                     autofocus>
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-search me-1"></i>Search
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   {% if query %}
-    <h3>Results for "{{ query }}"</h3>
-    {% if results %}
-      <ul>
-        {% for user in results %}
-          <li>
-            <a href="{% url 'profile' user.username %}">{{ user.username }}</a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No users found.</p>
-    {% endif %}
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <h3 class="mb-4">
+          <i class="fas fa-users me-2 text-secondary"></i>
+          Results for "<span class="text-primary">{{ query }}</span>"
+        </h3>
+
+        {% if results %}
+          <div class="row g-3">
+            {% for user in results %}
+              <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm user-card">
+                  <div class="card-body text-center">
+                    <div class="mb-3">
+                      {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}"
+                             alt="{{ user.username }}"
+                             class="rounded-circle"
+                             style="width:80px;height:80px;object-fit:cover;">
+                      {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
+                             style="width:80px;height:80px;">
+                          <i class="fas fa-user fa-2x text-white"></i>
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <h6 class="card-title mb-1">
+                      <a href="{% url 'profile' user.username %}"
+                         class="text-decoration-none fw-bold">
+                        {{ user.get_full_name|default:user.username }}
+                      </a>
+                    </h6>
+                    <p class="text-muted small mb-2">@{{ user.username }}</p>
+
+                    {% if user.location %}
+                      <p class="text-muted small mb-3">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ user.location }}
+                      </p>
+                    {% endif %}
+
+                    <a href="{% url 'profile' user.username %}"
+                       class="btn btn-outline-primary btn-sm">
+                      <i class="fas fa-eye me-1"></i>View Profile
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <div class="mb-4">
+              <i class="fas fa-user-slash text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+            <h5 class="text-muted">No users found</h5>
+            <p class="text-muted">
+              Try searching with different keywords or check your spelling.
+            </p>
+            <a href="{% url 'friend-suggestions' %}" class="btn btn-outline-primary mt-2">
+              <i class="fas fa-user-friends me-2"></i>Browse Friend Suggestions
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card border-0 bg-light">
+          <div class="card-body text-center py-4">
+            <h5 class="card-title text-muted mb-3">
+              <i class="fas fa-lightbulb me-2"></i>Search Tips
+            </h5>
+            <ul class="list-unstyled text-muted">
+              <li class="mb-2">
+                <i class="fas fa-user me-2 text-primary"></i>
+                Search by username to find specific users
+              </li>
+              <li class="mb-2">
+                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                Search by location to find people near you
+              </li>
+              <li>
+                <i class="fas fa-search me-2 text-primary"></i>
+                Use partial names for broader results
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   {% endif %}
+</div>
+
+<style>
+.user-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+.input-group-text {
+  background-color: #f8f9fa;
+  border-right: none;
+}
+
+.form-control:focus {
+  border-left: none;
+  box-shadow: none;
+}
+</style>
 {% endblock %}

@@ -15,12 +15,14 @@ import random
 
 User = get_user_model()
 
+
 def welcome_view(request):
     if request.user.is_authenticated:
         return redirect('post-list')
     return render(request, 'network/welcome.html', {
         'show_auth_links': False
     })
+
 
 class PostListView(ListView):
     model = Post
@@ -44,6 +46,7 @@ class PostListView(ListView):
         if user.is_authenticated and user.groups.filter(name='Moderator').exists():
             context['is_moderator'] = True
         return context
+
 
 class ProfileView(DetailView):
     model = User
@@ -80,6 +83,7 @@ class ProfileView(DetailView):
         context['posts'] = profile_user.posts.order_by('-posted_at')
         return context
 
+
 class FriendsListView(DetailView):
     model = CustomUser
     template_name = 'network/friends_list.html'
@@ -91,6 +95,7 @@ class FriendsListView(DetailView):
         context = super().get_context_data(**kwargs)
         context['friends'] = self.get_object().friends
         return context
+
 
 class UnfriendUserView(LoginRequiredMixin, View):
     def post(self, request, username):
@@ -106,6 +111,7 @@ class UnfriendUserView(LoginRequiredMixin, View):
             friend_request.delete()
 
         return redirect('profile', username=other_user.username)
+
 
 class SendFriendRequestView(LoginRequiredMixin, View):
     def post(self, request, username):
@@ -128,11 +134,13 @@ class SendFriendRequestView(LoginRequiredMixin, View):
 
         return redirect('profile', username=username)
 
+
 class CancelFriendRequestView(LoginRequiredMixin, View):
     def post(self, request, username):
         to_user = get_object_or_404(CustomUser, username=username)
         FriendRequest.objects.filter(sender=request.user, receiver=to_user, accepted=False).delete()
         return redirect('profile', username=username)
+
 
 class AcceptFriendRequestView(LoginRequiredMixin, View):
     def post(self, request, username):
@@ -149,6 +157,7 @@ class AcceptFriendRequestView(LoginRequiredMixin, View):
             ).update(message=f"You and {from_user.username} are now friends.")
         return redirect('profile', username=from_user.username)
 
+
 class DeclineFriendRequestView(LoginRequiredMixin, View):
     def post(self, request, username):
         from_user = get_object_or_404(CustomUser, username=username)
@@ -160,6 +169,7 @@ class DeclineFriendRequestView(LoginRequiredMixin, View):
         ).delete()
         FriendRequest.objects.filter(sender=from_user, receiver=request.user, accepted=False).delete()
         return redirect('profile', username=from_user.username)
+
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
@@ -173,6 +183,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
             return redirect('post-list')
         form.instance.author = self.request.user
         return super().form_valid(form)
+
 
 class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
@@ -245,6 +256,7 @@ class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         '''
         return form_html
 
+
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
     template_name = 'network/delete_post.html'
@@ -253,8 +265,8 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         post = self.get_object()
         return (
-            self.request.user == post.author or
-            self.request.user.groups.filter(name='Moderator').exists()
+                self.request.user == post.author or
+                self.request.user.groups.filter(name='Moderator').exists()
         )
 
     def get(self, request, *args, **kwargs):
@@ -282,6 +294,7 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             })
 
         return super().post(request, *args, **kwargs)
+
 
 class PostDetailView(DetailView, FormView):
     model = Post
@@ -328,6 +341,7 @@ class PostDetailView(DetailView, FormView):
         context['previous_url'] = self.request.META.get('HTTP_REFERER')
         return context
 
+
 class ModeratorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'network/mod_dashboard.html'
 
@@ -349,6 +363,7 @@ class ModeratorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
 
         return context
 
+
 class ToggleBanUserView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.groups.filter(name="Moderator").exists()
@@ -357,13 +372,28 @@ class ToggleBanUserView(LoginRequiredMixin, UserPassesTestMixin, View):
         user = get_object_or_404(CustomUser, id=user_id)
 
         if user == request.user or user.is_superuser or user.groups.filter(name="Moderator").exists():
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': 'You cannot ban this user.'}, status=403)
             messages.error(request, "You cannot ban this user.")
             return redirect('moderator-dashboard')
 
         user.is_banned = not user.is_banned
         user.save()
-        messages.success(request, f"User {'unbanned' if not user.is_banned else 'banned'}.")
+
+        status_text = 'unbanned' if not user.is_banned else 'banned'
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'is_banned': user.is_banned,
+                'status_text': status_text,
+                'button_text': 'Ban' if not user.is_banned else 'Unban',
+                'message': f"User {status_text}."
+            })
+
+        messages.success(request, f"User {status_text}.")
         return redirect('moderator-dashboard')
+
 
 class DeleteAnyPostView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
@@ -371,9 +401,18 @@ class DeleteAnyPostView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def post(self, request, post_id):
         post = get_object_or_404(Post, id=post_id)
+        post_author = post.author.username
         post.delete()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f"Post by {post_author} deleted."
+            })
+
         messages.success(request, "Post deleted.")
         return redirect('moderator-dashboard')
+
 
 class ToggleLikeView(View):
     def post(self, request, pk):
@@ -411,6 +450,7 @@ class ToggleLikeView(View):
             })
 
         return redirect(request.META.get('HTTP_REFERER', 'post-list'))
+
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Comment
@@ -455,6 +495,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
         return super().post(request, *args, **kwargs)
 
+
 class CommentEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Comment
     form_class = CommentForm
@@ -497,6 +538,7 @@ class CommentEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context['post'] = self.object.post
         return context
 
+
 class UserSearchView(ListView):
     model = CustomUser
     template_name = 'network/user_search.html'
@@ -519,6 +561,7 @@ class UserSearchView(ListView):
         context['query'] = self.request.GET.get('q', '')
         return context
 
+
 class NotificationListView(LoginRequiredMixin, ListView):
     model = Notification
     template_name = 'network/notifications.html'
@@ -538,6 +581,7 @@ class NotificationListView(LoginRequiredMixin, ListView):
         context['active_friend_requests'] = active_friend_requests
         return context
 
+
 class NotificationUpdateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         notification_id = request.POST.get('notification_id')
@@ -554,7 +598,6 @@ class NotificationUpdateView(LoginRequiredMixin, View):
                 recipient=request.user
             ).update(read=True)
 
-
         unread_count = Notification.objects.filter(
             recipient=request.user,
             read=False
@@ -568,6 +611,7 @@ class NotificationUpdateView(LoginRequiredMixin, View):
 
         return redirect('notifications')
 
+
 class NotificationCountView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         unread_count = Notification.objects.filter(
@@ -579,6 +623,7 @@ class NotificationCountView(LoginRequiredMixin, View):
             'unread_count': unread_count
         })
 
+
 class NotificationDeleteView(DeleteView):
     model = Notification
     success_url = reverse_lazy('notifications')
@@ -587,10 +632,12 @@ class NotificationDeleteView(DeleteView):
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user)
 
+
 class DeleteAllNotificationsView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         request.user.notifications.all().delete()
         return redirect('notifications')
+
 
 class PostLikesListView(LoginRequiredMixin, DetailView):
     model = Post
@@ -602,6 +649,7 @@ class PostLikesListView(LoginRequiredMixin, DetailView):
         context['liked_users'] = self.object.liked_by.all()
         return context
 
+
 class ExploreView(ListView):
     model = Post
     template_name = 'explore.html'
@@ -611,6 +659,7 @@ class ExploreView(ListView):
         return Post.objects.filter(
             visibility='public'
         ).order_by('-posted_at')
+
 
 class FriendSuggestionView(LoginRequiredMixin, ListView):
     model = CustomUser

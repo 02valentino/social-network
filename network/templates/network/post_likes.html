@@ -1,12 +1,116 @@
 {% extends "base.html" %}
+
+{% block title %}People who liked this post - V Network{% endblock %}
+
 {% block content %}
-  <a href="javascript:history.back()">⬅ Back</a>
-  <h2>People who liked this post:</h2>
-  <ul>
-    {% for user in liked_users %}
-      <li><a href="{% url 'profile' username=user.username %}">{{ user.username }}</a></li>
-    {% empty %}
-      <p>No likes yet.</p>
-    {% endfor %}
-  </ul>
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="d-flex align-items-center mb-4">
+        <button
+          type="button"
+          class="btn btn-outline-secondary me-3"
+          onclick="history.back()"
+        >
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <h2 class="mb-0">
+          <i class="fas fa-heart text-danger me-2"></i>
+          People who liked this post
+        </h2>
+      </div>
+
+      <div class="card shadow-sm post-likes-container">
+        <div class="card-body p-0">
+          {% if liked_users %}
+          <div class="list-group list-group-flush">
+            {% for user in liked_users %}
+            <div class="list-group-item list-group-item-action">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 me-3">
+                  {% if user.profile_picture %}
+                  <img
+                    src="{{ user.profile_picture.url }}"
+                    alt="{{ user.username }}"
+                    class="rounded-circle user-avatar"
+                    style="width: 48px; height: 48px; object-fit: cover"
+                  />
+                  {% else %}
+                  <div
+                    class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white user-avatar"
+                    style="
+                      width: 48px;
+                      height: 48px;
+                      font-size: 1.2rem;
+                      font-weight: 500;
+                    "
+                  >
+                    {{ user.username|first|upper }}
+                  </div>
+                  {% endif %}
+                </div>
+
+                <div class="flex-grow-1">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      <h6 class="mb-1">
+                        <a
+                          href="{% url 'profile' username=user.username %}"
+                          class="text-decoration-none text-dark fw-semibold"
+                        >
+                          {{ user.username }}
+                        </a>
+                      </h6>
+                      {% if user.first_name or user.last_name %}
+                      <small class="text-muted">
+                        {{ user.first_name }} {{ user.last_name }}
+                      </small>
+                      {% endif %}
+                    </div>
+
+                    <a
+                      href="{% url 'profile' username=user.username %}"
+                      class="btn btn-outline-primary btn-sm"
+                    >
+                      <i class="fas fa-user me-1"></i>
+                      View Profile
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <div class="mb-3">
+              <i
+                class="fas fa-heart-broken text-muted empty-state-icon"
+                style="font-size: 3rem"
+              ></i>
+            </div>
+            <h5 class="text-muted mb-2">No likes yet</h5>
+            <p class="text-muted">Be the first to like this post!</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if liked_users %}
+      <div class="mt-3 text-center">
+        <span class="likes-stats">
+          <small class="text-muted">
+            <i class="fas fa-users me-1"></i>
+            {{ liked_users|length }}
+            {% if liked_users|length == 1 %}person{% else %}people{% endif %}
+            liked this post
+          </small>
+        </span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

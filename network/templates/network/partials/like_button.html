@@ -1,11 +1,27 @@
-<form action="{% url 'toggle-like' post.pk %}" method="post" style="display:inline;">
-  <a href="{% url 'post-likes' post.pk %}">{{ post.total_likes }} Likes</a>
-  {% csrf_token %}
-  <button type="submit">
-    {% if user in post.liked_by.all %}
-      ❤️ Unlike
-    {% else %}
-      🤍 Like
-    {% endif %}
+<div class="d-flex align-items-center" id="like-container-{{ post.pk }}">
+  <button
+    type="button"
+    class="btn btn-sm btn-outline-primary like-btn"
+    data-post-id="{{ post.pk }}"
+    onclick="handleLikeClick(this); return false;">
+    <span class="like-icon">
+      {% if user in post.liked_by.all %}
+        ❤️
+      {% else %}
+        🤍
+      {% endif %}
+    </span>
   </button>
-</form>
+  <span class="like-count ms-1">
+    {% if post.total_likes > 0 %}
+    <a
+      href="{% url 'post-likes' post.pk %}"
+      class="text-decoration-none text-muted"
+      title="View who liked this post">
+      {{ post.total_likes }}
+    </a>
+    {% else %}
+    <span class="text-muted">0</span>
+    {% endif %}
+  </span>
+</div>

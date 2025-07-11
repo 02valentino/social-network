@@ -1,44 +1,139 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load static %}
 
 {% block content %}
-  <h2>Notifications</h2>
-
-  {% if notifications %}
-    <form method="post" action="{% url 'delete-all-notifications' %}" style="margin-bottom: 10px;">
-      {% csrf_token %}
-      <button type="submit">Clear All</button>
-    </form>
-    <ul>
-      {% for notification in notifications %}
-        <li class="{% if not notification.read %}unread{% endif %}">
-          <strong>
-            <a href="{% url 'profile' notification.sender.username %}">
-              {{ notification.sender.username }}
-            </a>
-          </strong> {{ notification.message|safe }}
-          <br>
-          <small>{{ notification.timestamp|naturaltime }}</small>
-
-          {% if "sent you a friend request" in notification.message and notification.sender.username in active_friend_requests %}
-            <form method="post" action="{% url 'accept-friend-request' notification.sender.username %}" style="display:inline;">
-              {% csrf_token %}
-              <button type="submit">Accept</button>
-            </form>
-            <form method="post" action="{% url 'decline-friend-request' notification.sender.username %}" style="display:inline;">
-              {% csrf_token %}
-              <button type="submit">Decline</button>
-            </form>
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="text-primary mb-2">
+            <i class="fas fa-bell me-2"></i>Notifications
+          </h2>
+          {% if notifications %}
+          <p class="text-muted mb-0">
+            You have {{ notifications|length }} notification{{ notifications|length|pluralize }}
+          </p>
           {% endif %}
-
-          <form method="post" action="{% url 'delete-notification' notification.pk %}" style="display:inline;">
+        </div>
+        {% if notifications %}
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'delete-all-notifications' %}" class="d-inline">
             {% csrf_token %}
-            <button type="submit">Delete</button>
+            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete all notifications">
+              <i class="fas fa-trash me-1"></i>Clear All
+            </button>
           </form>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No notifications.</p>
-  {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      {% if notifications %}
+      <div class="card shadow-sm">
+        <div class="list-group list-group-flush">
+          {% for notification in notifications %}
+          <div class="list-group-item notification-item {% if not notification.read %}unread{% endif %}" data-notification-id="{{ notification.id }}">
+            <div class="d-flex align-items-start justify-content-between">
+              <div class="d-flex align-items-start flex-grow-1">
+                <div class="me-3 flex-shrink-0">
+                  {% if notification.sender.profile_picture %}
+                  <img
+                    src="{{ notification.sender.profile_picture.url }}"
+                    alt="{{ notification.sender.username }}"
+                    class="rounded-circle"
+                    width="48"
+                    height="48"
+                  >
+                  {% else %}
+                  <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                       style="width: 48px; height: 48px; font-size: 1.2rem; font-weight: 500;">
+                    {{ notification.sender.username|first|upper }}
+                  </div>
+                  {% endif %}
+                </div>
+
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div>
+                      <strong>
+                        <a href="{% url 'profile' notification.sender.username %}" class="text-decoration-none">
+                          {{ notification.sender.username }}
+                        </a>
+                      </strong>
+                      {% if not notification.read %}
+                      <span class="badge bg-primary ms-2">New</span>
+                      {% endif %}
+                    </div>
+                    <small class="text-muted">
+                      {{ notification.timestamp|naturaltime }}
+                    </small>
+                  </div>
+
+                  <p class="mb-2 text-muted">{{ notification.message }}</p>
+
+                  {% if "sent you a friend request" in notification.message and notification.sender.username in active_friend_requests %}
+                  <div class="mt-2">
+                    <form method="post" action="{% url 'accept-friend-request' notification.sender.username %}" class="d-inline me-2">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm">
+                        <i class="fas fa-check me-1"></i>Accept
+                      </button>
+                    </form>
+                    <form method="post" action="{% url 'decline-friend-request' notification.sender.username %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-times me-1"></i>Decline
+                      </button>
+                    </form>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="ms-3 d-flex flex-column gap-1">
+                <div class="text-center">
+                  {% if "friend request" in notification.message %}
+                  <i class="fas fa-user-plus text-primary" style="font-size: 1.2rem;"></i>
+                  {% elif "liked your post" in notification.message %}
+                  <i class="fas fa-heart text-danger" style="font-size: 1.2rem;"></i>
+                  {% elif "commented on your post" in notification.message %}
+                  <i class="fas fa-comment text-info" style="font-size: 1.2rem;"></i>
+                  {% elif "accepted your friend request" in notification.message %}
+                  <i class="fas fa-user-check text-success" style="font-size: 1.2rem;"></i>
+                  {% else %}
+                  <i class="fas fa-bell text-muted" style="font-size: 1.2rem;"></i>
+                  {% endif %}
+                </div>
+
+                <form method="post" action="{% url 'delete-notification' notification.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete notification">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% else %}
+      <div class="notifications-empty text-center py-5">
+        <div class="mb-4">
+          <i class="fas fa-bell-slash text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+        </div>
+        <h4 class="text-muted mb-3">No notifications yet</h4>
+        <p class="text-muted mb-4">
+          When someone interacts with your posts or sends you friend requests, you'll see them here.
+        </p>
+        <a href="{% url 'post-list' %}" class="btn btn-primary">
+          <i class="fas fa-home me-1"></i>Back to Feed
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

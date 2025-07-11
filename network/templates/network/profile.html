@@ -2,95 +2,232 @@
 {% load static %}
 
 {% block content %}
-  {% if profile_user.profile_picture %}
-    <img src="{{ profile_user.profile_picture.url }}" alt="Profile Picture">
-  {% else %}
-    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile" style="width:100px;height:100px;">
-  {% endif %}
+<div class="container mt-4">
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-3 text-center mb-3 mb-md-0">
+          {% if profile_user.profile_picture %}
+          <img
+            src="{{ profile_user.profile_picture.url }}"
+            alt="Profile Picture"
+            class="rounded-circle"
+            style="width: 120px; height: 120px; object-fit: cover"
+          />
+          {% else %}
+          <div
+            class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
+            style="width: 120px; height: 120px"
+          >
+            <i class="fas fa-user fa-3x text-white"></i>
+          </div>
+          {% endif %}
+        </div>
 
-  <h2>{{ profile_user.first_name }} {{ profile_user.last_name }}</h2>
-  <h3>@{{ profile_user.username }}</h3>
+        <div class="col-md-9">
+          <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-start"
+          >
+            <div class="profile-info mb-3 mb-md-0">
+              <h2 class="mb-1 fw-bold">
+                {{ profile_user.first_name }} {{ profile_user.last_name }}
+              </h2>
+              <h5 class="text-muted mb-3">@{{ profile_user.username }}</h5>
 
-  <p><strong>Posts:</strong> {{ posts_count }}</p>
-  <p>
-    <strong>
-      <a href="{% url 'user-friends' username=profile_user.username %}">
-        Friends: {{ friends_count|default:0 }}
-      </a>
-    </strong>
-  </p>
+              <div class="d-flex gap-4 mb-3">
+                <div class="text-center">
+                  <strong class="d-block fs-5 text-primary">{{ posts_count }}</strong>
+                  <small class="text-muted">Posts</small>
+                </div>
+                <div class="text-center">
+                  <a
+                    href="{% url 'user-friends' username=profile_user.username %}"
+                    class="text-decoration-none"
+                  >
+                    <strong class="d-block fs-5 text-primary">{{ friends_count|default:0 }}</strong>
+                    <small class="text-muted">Friends</small>
+                  </a>
+                </div>
+              </div>
 
-  {% if profile_user.bio %}
-    <p><strong>Bio:</strong> {{ profile_user.bio }}</p>
-  {% endif %}
+              {% if profile_user.bio %}
+              <p class="mb-2 text-muted">
+                <i class="fas fa-quote-left me-2"></i>{{ profile_user.bio }}
+              </p>
+              {% endif %}
 
-  {% if profile_user.birthday %}
-    <p><strong>Birthday:</strong> {{ profile_user.birthday }}</p>
-  {% endif %}
+              {% if profile_user.birthday %}
+              <p class="mb-1 text-muted">
+                <i class="fas fa-birthday-cake me-2"></i>{{ profile_user.birthday }}
+              </p>
+              {% endif %}
 
-  {% if profile_user.location %}
-    <p><strong>Location:</strong> {{ profile_user.location }}</p>
-  {% endif %}
+              {% if profile_user.location %}
+              <p class="mb-1 text-muted">
+                <i class="fas fa-map-marker-alt me-2"></i>{{ profile_user.location }}
+              </p>
+              {% endif %}
 
-  {% if user.is_authenticated and user == profile_user %}
-    <p><strong>Email:</strong> {{ profile_user.email }}</p>
-    <p><strong>Joined:</strong> {{ profile_user.date_joined }}</p>
-    <p><a href="{% url 'edit-profile' %}">Edit Profile</a></p>
-  {% endif %}
+              {% if user.is_authenticated and user == profile_user %}
+              <p class="mb-1 text-muted">
+                <i class="fas fa-envelope me-2"></i>{{ profile_user.email }}
+              </p>
+              <p class="mb-1 text-muted">
+                <i class="fas fa-calendar me-2"></i>Joined {{ profile_user.date_joined|date:"M d, Y" }}
+              </p>
+              {% endif %}
+            </div>
 
-  {% if user.is_authenticated and user != profile_user %}
-    {% if is_friend %}
-      <form action="{% url 'unfriend-user' profile_user.username %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Unfriend</button>
-      </form>
-    {% elif request_received %}
-      <form action="{% url 'accept-friend-request' profile_user.username %}" method="post" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit">Accept</button>
-      </form>
-      <form action="{% url 'decline-friend-request' profile_user.username %}" method="post" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit">Decline</button>
-      </form>
-    {% elif request_sent %}
-      <form action="{% url 'cancel-friend-request' profile_user.username %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Cancel Request</button>
-      </form>
-    {% else %}
-      <form action="{% url 'send-friend-request' profile_user.username %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Add Friend</button>
-      </form>
-    {% endif %}
-  {% endif %}
+            <div class="d-flex flex-column gap-2">
+              {% if user.is_authenticated and user == profile_user %}
+              <a href="{% url 'edit-profile' %}" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>Edit Profile
+              </a>
+              {% elif user.is_authenticated and user != profile_user %}
+                {% if is_friend %}
+                <form action="{% url 'unfriend-user' profile_user.username %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger">
+                    <i class="fas fa-user-minus me-2"></i>Unfriend
+                  </button>
+                </form>
+                {% elif request_received %}
+                <form action="{% url 'accept-friend-request' profile_user.username %}" method="post" class="mb-2">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-success">
+                    <i class="fas fa-user-check me-2"></i>Accept Request
+                  </button>
+                </form>
+                <form action="{% url 'decline-friend-request' profile_user.username %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Decline
+                  </button>
+                </form>
+                {% elif request_sent %}
+                <form action="{% url 'cancel-friend-request' profile_user.username %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-warning">
+                    <i class="fas fa-clock me-2"></i>Request Sent
+                  </button>
+                </form>
+                {% else %}
+                <form action="{% url 'send-friend-request' profile_user.username %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>Add Friend
+                  </button>
+                </form>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   {% if user == profile_user or is_friend %}
-    <h3>Posts by {{ profile_user.username }}</h3>
-    {% if posts %}
-      <ul>
-        {% for post in posts %}
-          {% if user == post.author %}
-            <a href="{% url 'edit-post' post.pk %}">Edit</a>
-            <a href="{% url 'delete-post' post.pk %}">Delete</a>
-          {% endif %}
-          <li>
-            {{ post.content }} <em>— {{ post.posted_at|date:"M d, Y H:i" }}</em>
-          </li>
+  <div class="row">
+    <div class="col-12">
+      <h3 class="mb-4">Posts by {{ profile_user.username }}</h3>
 
-          {% include "network/partials/like_button.html" with post=post %}
+      {% if posts %}
+      {% for post in posts %}
+      <div class="card mb-3" data-post-id="{{ post.pk }}">
+        <div class="card-body position-relative">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="d-flex align-items-center">
+              {% if post.author.profile_picture %}
+              <img
+                src="{{ post.author.profile_picture.url }}"
+                class="rounded-circle me-2 post-avatar"
+                width="40"
+                height="40"
+                alt="User Picture"
+              />
+              {% else %}
+              <div class="rounded-circle avatar-placeholder avatar-md me-2">
+                <i class="fas fa-user"></i>
+              </div>
+              {% endif %}
+              <a
+                href="{% url 'profile' post.author.username %}"
+                class="fw-bold text-decoration-none me-2"
+              >{{ post.author.username }}</a>
+              <small class="text-muted ms-2">{{ post.posted_at|date:"M d, Y H:i" }}</small>
+            </div>
 
-          <a href="{% url 'post-detail' post.pk %}">
-            <button type="button">Comment</button>
-          </a>
-          <a href="{% url 'post-detail' post.pk %}">{{ post.comment_count }} comments</a>
-        {% endfor %}
-      </ul>
-    {% else %}
+            {% if user == post.author or user.groups.all.0.name == 'Moderator' %}
+            <div class="dropdown">
+              <button
+                class="btn btn-sm btn-light dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+              >
+                ⋮
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% if user == post.author %}
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    onclick="editPost('{{ post.pk }}'); return false;"
+                  >Edit</a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item text-danger"
+                    href="#"
+                    onclick="deletePost('{{ post.pk }}'); return false;"
+                  >Delete</a>
+                </li>
+                {% elif user.groups.all.0.name == 'Moderator' %}
+                <li>
+                  <a
+                    class="dropdown-item text-danger"
+                    href="#"
+                    onclick="deletePost('{{ post.pk }}'); return false;"
+                  >Delete</a>
+                </li>
+                {% endif %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+
+          <p class="card-text">{{ post.content }}</p>
+
+          <div class="d-flex align-items-center">
+            {% include "network/partials/like_button.html" with post=post %}
+
+            <form
+              action="{% url 'post-detail' post.pk %}"
+              method="get"
+              class="d-inline ms-3"
+            >
+              <button type="submit" class="btn btn-sm btn-outline-secondary">
+                💬 <span class="comment-count">{{ post.comment_count }}</span>
+              </button>
+            </form>
+          </div>
+
+          <span class="badge bg-secondary position-absolute bottom-0 end-0 m-3">
+            {{ post.get_visibility_display }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
       <p>No posts yet.</p>
-    {% endif %}
+      {% endif %}
+    </div>
+  </div>
   {% else %}
-    <p><em>You must be friends with {{ profile_user.username }} to view their posts.</em></p>
+  <p>
+    <em>You must be friends with {{ profile_user.username }} to view their posts.</em>
+  </p>
   {% endif %}
+</div>
 {% endblock %}

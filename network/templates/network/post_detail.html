@@ -1,39 +1,258 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% load humanize %} {% block title %}{{
+post.author.username }}'s Post - V Network{% endblock %} {% block content %}
+<div class="container mt-4">
+  {% csrf_token %}
+  <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
+    <i class="fas fa-arrow-left me-1"></i>Back
+  </a>
 
-{% block content %}
-  <a href="javascript:history.back()">⬅ Back</a>
-  <h2>{{ post.author.username }}'s Post</h2>
-  <p>{{ post.content }}</p>
-  <p><small>Posted at {{ post.posted_at }}</small></p>
+  <!-- Post Card -->
+  <div class="card mb-4" data-post-id="{{ post.pk }}">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center">
+          {% if post.author.profile_picture %}
+          <img
+            src="{{ post.author.profile_picture.url }}"
+            class="rounded-circle me-2 post-avatar"
+            width="40"
+            height="40"
+            alt="User Picture"
+          />
+          {% else %}
+          <div class="rounded-circle avatar-placeholder avatar-md me-2">
+            <i class="fas fa-user"></i>
+          </div>
+          {% endif %}
+          <h5 class="mb-0">
+            <a
+              href="{% url 'profile' post.author.username %}"
+              class="text-decoration-none"
+            >
+              {{ post.author.username }}
+            </a>
+          </h5>
+          <small class="text-muted ms-2">
+            {{ post.posted_at|naturaltime }}
+          </small>
+        </div>
 
-  <hr>
-  <h3>Comments</h3>
-  {% for comment in comments %}
-    <div>
-      <strong>{{ comment.author.username }}</strong>: {{ comment.content }}
-      <small>{{ comment.created_at|date:"M d, Y H:i" }}</small>
-      {% if user.is_authenticated %}
-        {% if user == comment.author or is_moderator %}
-          <form method="post" action="{% url 'delete-comment' comment.pk %}">
-            {% csrf_token %}
-            <button type="submit">Delete</button>
-          </form>
+        {% if user == post.author or user.groups.all.0.name == 'Moderator' %}
+        <div class="dropdown">
+          <button
+            class="btn btn-sm btn-light dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+          >
+            ⋮
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <a
+                class="dropdown-item"
+                href="#"
+                onclick="editPost('{{ post.pk }}'); return false;"
+              >
+                Edit
+              </a>
+            </li>
+            <li>
+              <a
+                class="dropdown-item text-danger"
+                href="#"
+                onclick="deletePost('{{ post.pk }}'); return false;"
+              >
+                Delete
+              </a>
+            </li>
+          </ul>
+        </div>
         {% endif %}
-      {% endif %}
+      </div>
+
+      <p class="card-text post-content">{{ post.content }}</p>
+
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          {% include "network/partials/like_button.html" with post=post %}
+          <span class="ms-3 text-muted">
+            <i class="fas fa-comment me-1"></i>
+            <span class="comment-count">{{ comments|length }}</span> comment
+          </span>
+        </div>
+        <div class="d-flex align-items-center">
+          <span class="badge bg-secondary post-visibility">
+            {{ post.get_visibility_display }}
+          </span>
+        </div>
+      </div>
     </div>
-  {% empty %}
-    <p>No comments yet.</p>
-  {% endfor %}
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+      <i class="fas fa-comments me-2"></i>
+      Comments (<span class="comment-count">{{ comments|length }}</span>)
+    </h4>
+    {% if user.is_authenticated %}
+    <button
+      class="btn btn-outline-primary btn-sm"
+      onclick="scrollToCommentForm()"
+    >
+      <i class="fas fa-plus me-1"></i>Add Comment
+    </button>
+    {% endif %}
+  </div>
+
+  <ul class="list-group mb-4 comments-list">
+    {% for comment in comments %}
+    <li class="list-group-item comment-item" data-comment-id="{{ comment.pk }}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="d-flex align-items-start flex-grow-1">
+          <div class="me-3 flex-shrink-0">
+            {% if comment.author.profile_picture %}
+            <img
+              src="{{ comment.author.profile_picture.url }}"
+              class="rounded-circle post-avatar"
+              width="32"
+              height="32"
+              alt="User Picture"
+            />
+            {% else %}
+            <div class="rounded-circle avatar-placeholder avatar-sm">
+              <i class="fas fa-user"></i>
+            </div>
+            {% endif %}
+          </div>
+          <div class="flex-grow-1">
+            <div class="mb-1">
+              <strong>
+                <a
+                  href="{% url 'profile' comment.author.username %}"
+                  class="text-decoration-none"
+                >
+                  {{ comment.author.username }}
+                </a>
+              </strong>
+              <small class="text-muted ms-2" title="{{ comment.created_at }}">
+                {{ comment.created_at|date:"M d, Y H:i" }}
+              </small>
+            </div>
+            <p class="mb-0 comment-content">{{ comment.content }}</p>
+          </div>
+        </div>
+
+        {% if user.is_authenticated and user == comment.author or is_moderator %}
+        <div class="dropdown">
+          <button
+            class="btn btn-sm btn-light dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-label="Comment options"
+          >
+            ⋮
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <a
+                class="dropdown-item"
+                href="#"
+                data-action="edit-comment"
+                data-comment-id="{{ comment.pk }}"
+              >
+                <i class="fas fa-edit me-1"></i>Edit
+              </a>
+            </li>
+            <li>
+              <a
+                class="dropdown-item text-danger"
+                href="#"
+                data-action="delete-comment"
+                data-comment-id="{{ comment.pk }}"
+                data-post-id="{{ post.pk }}"
+              >
+                <i class="fas fa-trash me-1"></i>Delete
+              </a>
+            </li>
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </li>
+    {% empty %}
+    <li class="list-group-item no-comments text-center text-muted py-4">
+      <i
+        class="fas fa-comment-slash mb-2"
+        style="font-size: 2rem; opacity: 0.5"
+      ></i>
+      <div>No comments yet.</div>
+      <small>Be the first to share your thoughts!</small>
+    </li>
+    {% endfor %}
+  </ul>
 
   {% if user.is_authenticated %}
-    <hr>
-    <h4>Leave a comment</h4>
-    <form method="post">
-      {% csrf_token %}
-      {{ comment_form.as_p }}
-      <button type="submit">Comment</button>
-    </form>
+  <div class="card" id="comment-form-section">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <div class="me-3">
+          {% if user.profile_picture %}
+          <img
+            src="{{ user.profile_picture.url }}"
+            class="rounded-circle"
+            width="40"
+            height="40"
+            alt="Your Picture"
+          />
+          {% else %}
+          <div class="rounded-circle avatar-placeholder avatar-md">
+            <i class="fas fa-user"></i>
+          </div>
+          {% endif %}
+        </div>
+        <h5 class="card-title mb-0">Leave a comment</h5>
+      </div>
+
+      <form method="post" class="comment-form" data-post-id="{{ post.pk }}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label
+            for="{{ comment_form.content.id_for_label }}"
+            class="form-label"
+          >
+            Comment
+          </label>
+          {{ comment_form.content }}
+          <div class="form-text">Share your thoughts respectfully.</div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <button class="btn btn-primary" type="submit">
+            <i class="fas fa-comment me-1"></i>Post Comment
+          </button>
+          <small class="text-muted">
+            <i class="fas fa-info-circle me-1"></i>
+            Comments are posted instantly
+          </small>
+        </div>
+      </form>
+    </div>
+  </div>
   {% else %}
-    <p><a href="{% url 'login' %}">Log in</a> to comment.</p>
+  <div class="card">
+    <div class="card-body text-center">
+      <i
+        class="fas fa-sign-in-alt mb-3"
+        style="font-size: 2rem; color: #6c757d"
+      ></i>
+      <p class="mb-3">
+        <a href="{% url 'login' %}" class="text-decoration-none">Log in</a> to
+        join the conversation.
+      </p>
+      <a href="{% url 'login' %}" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt me-1"></i>Log In
+      </a>
+    </div>
+  </div>
   {% endif %}
+</div>
 {% endblock %}

@@ -1,11 +1,10 @@
-{% extends 'base.html' %}
-{% load humanize %}
-
-{% block content %}
+{% extends 'base.html' %} {% load humanize %} {% load static %} {% block content %}
+<div class="mod-dashboard mx-3">
+  {% csrf_token %}
   <h2>Moderator Dashboard</h2>
 
   <h3>All Regular Users</h3>
-  <table>
+  <table class="mod-users-table">
     <thead>
       <tr>
         <th>Username</th>
@@ -16,43 +15,68 @@
     </thead>
     <tbody>
       {% for user in users %}
-        <tr>
-          <td><a href="{% url 'profile' user.username %}">{{ user.username }}</a></td>
-          <td>{{ user.email }}</td>
-          <td>
-            {% if user.is_banned %}
-              <span>Banned</span>
-            {% else %}
-              Active
-            {% endif %}
-          </td>
-          <td>
-            {% if user != request.user %}
-              <form method="post" action="{% url 'toggle-ban' user.id %}">
-                {% csrf_token %}
-                <button type="submit">
-                  {% if user.is_banned %}Unban{% else %}Ban{% endif %}
-                </button>
-              </form>
-            {% endif %}
-          </td>
-        </tr>
+      <tr id="user-row-{{ user.id }}">
+        <td>
+          <a href="{% url 'profile' user.username %}">{{ user.username }}</a>
+        </td>
+        <td>{{ user.email }}</td>
+        <td>
+          <span class="user-status {% if user.is_banned %}banned{% else %}active{% endif %}" id="status-{{ user.id }}">
+            {% if user.is_banned %}Banned{% else %}Active{% endif %}
+          </span>
+        </td>
+        <td>
+          {% if user != request.user %}
+          <button
+            type="button"
+            class="mod-action-btn {% if user.is_banned %}unban-btn{% else %}ban-btn{% endif %}"
+            id="ban-btn-{{ user.id }}"
+            data-user-id="{{ user.id }}"
+            data-is-banned="{% if user.is_banned %}true{% else %}false{% endif %}"
+            onclick="toggleBanUser(this)"
+          >
+            {% if user.is_banned %}Unban{% else %}Ban{% endif %}
+          </button>
+          {% endif %}
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
 
   <h3>All Posts by Regular Users</h3>
-  <ul>
-    {% for post in posts %}
-      <li>
-        <strong><a href="{% url 'profile' post.author.username %}">{{ post.author.username }}</a></strong>:
-        {{ post.content|linebreaks }}
-        <small style="color: gray;">({{ post.posted_at|naturaltime }})</small>
-        <form method="post" action="{% url 'delete-post' post.id %}" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit">Delete</button>
-        </form>
+  <div class="mod-posts-container">
+    {% if posts %}
+    <ul class="mod-posts-list">
+      {% for post in posts %}
+      <li class="mod-post-item" id="post-item-{{ post.id }}">
+        <strong
+          ><a
+            href="{% url 'profile' post.author.username %}"
+            class="mod-post-author"
+            >{{ post.author.username }}</a
+          ></strong
+        >
+        <div class="mod-post-content">{{ post.content|linebreaks }}</div>
+        <div class="mod-post-timestamp">{{ post.posted_at|naturaltime }}</div>
+        <button
+          type="button"
+          class="mod-delete-btn"
+          data-post-id="{{ post.id }}"
+          onclick="deletePost(this)"
+        >
+          Delete
+        </button>
       </li>
-    {% endfor %}
-  </ul>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="mod-empty-state">No posts found from regular users.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/moderator.js' %}"></script>
 {% endblock %}
